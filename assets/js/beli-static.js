@@ -5,25 +5,32 @@
  * không có nơi lưu nên chặn lời gọi đó lại và tải thẳng ảnh về máy người dùng.
  */
 (function () {
-  // Bản gốc chặn tra cứu khi chưa xác thực; bản tĩnh mở cho mọi người, và
-  // trang "Tra cứu cặp đôi" có thể được mở thẳng nên phải tự đặt sẵn giá trị.
-  // Trang chủ gọi localStorage.clear() lúc ready nên phải đặt lại sau đó nữa.
-  function datMacDinh() {
+  // Trang "Tra cứu cặp đôi" có thể được mở thẳng, trong khi phần xác thực chỉ
+  // chạy ở trang chủ. Nếu chưa có quyền thì xin quyền khách từ máy chủ, để gói
+  // thành viên vẫn do máy chủ quyết định chứ không phải trình duyệt tự đặt.
+  function xinQuyenKhach() {
     try {
-      if (!localStorage.getItem('userType')) localStorage.setItem('userType', 'khach');
-      if (!localStorage.getItem('typeMapSearchList')) {
-        localStorage.setItem('typeMapSearchList', 'BẢN ĐỒ CUỘC ĐỜI BELI');
-      }
+      if (localStorage.getItem('userType')) return;
     } catch (e) {
-      /* trình duyệt chặn localStorage thì bỏ qua */
+      return;
     }
+    var base = window.BELI_API_BASE || '';
+    fetch(base + '/wp-json/readerinfo/v1/getDataInit', { method: 'POST' })
+      .then(function (r) { return r.json(); })
+      .then(function (d) {
+        if (!d || !d.result) return;
+        localStorage.setItem('userType', 'khach');
+        localStorage.setItem('typeMapSearchList', d.listTypeMapSearch || '');
+      })
+      .catch(function () { /* mất mạng thì thôi */ });
   }
-  datMacDinh();
 
   if (!window.jQuery) return;
   var $ = window.jQuery;
-  $(datMacDinh);
-  $(document).on('submit', 'form', datMacDinh);
+  // Trang chủ gọi localStorage.clear() lúc ready nên phải chạy sau đó.
+  $(function () {
+    if (!document.getElementById('readerInfoAuthenticateFormPopup')) xinQuyenKhach();
+  });
 
   var SAVE_IMAGE = '/wp-json/readerinfo/v1/save_base64_image';
   var goc = $.ajax;
