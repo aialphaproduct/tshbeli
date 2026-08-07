@@ -1,0 +1,12 @@
+/* Điều chỉnh nhỏ cho bản tĩnh: ẩn phần chỉ có ý nghĩa trên WordPress. */
+#wpadminbar,
+.admin-bar-showing,
+.flatsome-admin-notice {
+  display: none !important;
+}
+
+/* Trang gốc chèn khối "Assign a menu in Theme Options" khi chưa gán menu. */
+.no-menu-assigned,
+.woocommerce-not-found {
+  display: none !important;
+}

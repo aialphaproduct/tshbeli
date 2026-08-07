@@ -1,0 +1,125 @@
+/* Button used to open the contact form - fixed at the bottom of the page */
+.open-button {
+    background-color: #555;
+    color: white;
+    padding: 16px 20px;
+    border: none;
+    cursor: pointer;
+    opacity: 0.8;
+    position: fixed;
+    bottom: 23px;
+    right: 28px;
+    width: 280px;
+  }
+  
+  /* The popup form - hidden by default */
+  .reader-info-register-form-popup, .reader-info-authenticate-form-popup {
+    /* display: none;
+    position: fixed;
+    bottom: 0;
+    right: -25px;
+    z-index: 9;
+    margin: auto;
+    width: 60%;
+    height: 80%;
+    padding: 10px; */
+    /* border: 3px solid #f1f1f1; */
+    /* border: 3px solid #73AD21; */
+  }
+  
+  /* Add styles to the form container */
+  .reader-info-form-container {
+    max-width: 300px;
+    padding: 10px;
+    background-color: rgb(0, 0, 0);
+  }
+  
+  /* Full-width input fields */
+  .reader-info-form-container input[type=text], .reader-info-form-container input[type=password] {
+    width: 100%;
+    padding: 15px;
+    margin: 5px 0 22px 0;
+    border: none;
+    background: #f1f1f1;
+  }
+  
+  /* When the inputs get focus, do something */
+  .reader-info-form-container input[type=text]:focus, .reader-info-form-container input[type=password]:focus {
+    background-color: #ddd;
+    outline: none;
+  }
+  
+  /* Set a style for the submit/login button */
+  .reader-info-form-container .btn {
+    background-color: #04AA6D;
+    color: white;
+    border: none;
+    cursor: pointer;
+    width: 100%;
+    margin-bottom:10px;
+    opacity: 0.8;
+  }
+  
+  /* Add a red background color to the cancel button */
+  .reader-info-form-container .cancel {
+    background-color: red;
+  }
+  
+  /* Add some hover effects to buttons */
+  .reader-info-form-container .btn:hover, .open-button:hover {
+    opacity: 1;
+  }
+
+  /* Add a color white */
+  .readerInfo-color-white{
+    color: white;
+  }
+
+  /* Add a color red */
+  .readerInfo-color-red{
+    color: red;
+    font-weight: normal;
+  }
+
+  /* Add a color green */
+  .readerInfo-color-green{
+    color: green;
+    font-weight: normal;
+  }
+
+  /* Set loading when click button */
+  span.readerInfo-loadingPage {
+    position: fixed;
+}
+  /* Set loading when click button*/
+ .readerInfo-loadingPage-img{
+    cursor:pointer;
+    width:35px;
+    -webkit-filter:grayscale(100%);
+    filter:grayscale(100%);
+}
+
+.readerInfo-form {
+  background-color: #ffffea;
+  padding: 10px;
+  border: 1px solid #ffb600;
+}
+
+button#readerInfoRegisterDataOpenPopup {
+  color: #5e72e4;
+  background-color: transparent;
+  background-image: none;
+  border-color: #5e72e4;
+  border: 1px solid #5e72e4;
+  border-radius: 5px;
+  font-weight: normal;
+}
+
+button#readerInfoCheckDataOpenPopup {
+  color: #fff;
+  border-color: #ffb600;
+  background-color: #ffb600;
+  border: 1px solid #ffb600;
+  border-radius: 5px;
+  font-weight: normal;
+}
