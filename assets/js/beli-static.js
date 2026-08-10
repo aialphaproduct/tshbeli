@@ -93,7 +93,10 @@
   function mucPhong(el) {
     var rong = el.scrollWidth || el.offsetWidth || 1;
     var cao = el.scrollHeight || el.offsetHeight || 1;
-    var diDong = Math.min(window.innerWidth, window.innerHeight) < 768;
+    // Nhận diện máy điện thoại bằng kiểu con trỏ, không dựa vào chiều cao cửa
+    // sổ — máy tính thu nhỏ cửa sổ sẽ bị nhận nhầm và mất oan độ nét.
+    var conTroTho = window.matchMedia && window.matchMedia('(pointer: coarse)').matches;
+    var diDong = conTroTho || Math.min(window.innerWidth, window.innerHeight) < 600;
     var canhToiDa = 16000;                        // giới hạn thực tế ~16384
     var diemAnhToiDa = diDong ? 30e6 : 60e6;      // máy điện thoại ít bộ nhớ hơn
     var tran = Math.min(
@@ -123,6 +126,8 @@
           window.__BELI_XUAT = { rong: canvas.width, cao: canvas.height, mucPhong: o.scale };
           // Trả về thẻ ngắn thay cho chuỗi base64 hàng chục MB: bản gốc sẽ
           // nhét chuỗi này vào một lời gọi ajax, mà mình chặn lời gọi đó rồi.
+          // Vẫn giữ hàm gốc để lúc dựng PDF còn lấy được ảnh thật.
+          canvas.__toDataURLGoc = HTMLCanvasElement.prototype.toDataURL.bind(canvas);
           canvas.toDataURL = function () { return THE_CANVAS; };
           return canvas;
         });
@@ -139,6 +144,130 @@
     }
   })();
 
+  // ---------------------------------------------------------- chọn định dạng
+
+  var dinhDangChon = 'png';     // 'png' hoặc 'pdf'
+  var dangChoLai = false;
+
+  function hopChon(khiChon) {
+    var nen = document.createElement('div');
+    nen.setAttribute('style', [
+      'position:fixed', 'inset:0', 'background:rgba(0,0,0,.5)', 'z-index:99999',
+      'display:flex', 'align-items:center', 'justify-content:center', 'padding:16px',
+    ].join(';'));
+
+    var hop = document.createElement('div');
+    hop.setAttribute('style', [
+      'background:#fff', 'border-radius:12px', 'padding:24px', 'max-width:360px',
+      'width:100%', 'box-shadow:0 10px 40px rgba(0,0,0,.3)', 'text-align:center',
+      'font-family:inherit',
+    ].join(';'));
+
+    var tieuDe = document.createElement('div');
+    tieuDe.textContent = 'Tải bản đồ về máy';
+    tieuDe.setAttribute('style', 'font-size:18px;font-weight:700;margin-bottom:6px;color:#1f2937');
+
+    var moTa = document.createElement('div');
+    moTa.textContent = 'Chọn định dạng bạn muốn tải.';
+    moTa.setAttribute('style', 'font-size:14px;color:#4b5563;margin-bottom:18px');
+
+    function nut(chu, phu, mau) {
+      var b = document.createElement('button');
+      b.type = 'button';
+      b.setAttribute('style', [
+        'display:block', 'width:100%', 'min-height:44px', 'margin-bottom:10px',
+        'padding:10px 14px', 'border:0', 'border-radius:8px', 'cursor:pointer',
+        'background:' + mau, 'color:#fff', 'font-size:15px', 'font-weight:600',
+      ].join(';'));
+      b.innerHTML = chu + '<div style="font-size:12px;font-weight:400;opacity:.9">' + phu + '</div>';
+      return b;
+    }
+
+    var bAnh = nut('Tải ảnh PNG', 'Ảnh nét, dán vào Zalo hay Facebook được ngay', '#1d4ed8');
+    var bPdf = nut('Tải PDF', 'Một trang dài, hợp để in hoặc gửi khách', '#047857');
+
+    var bHuy = document.createElement('button');
+    bHuy.type = 'button';
+    bHuy.textContent = 'Huỷ';
+    bHuy.setAttribute('style', [
+      'display:block', 'width:100%', 'min-height:44px', 'border:1px solid #d1d5db',
+      'border-radius:8px', 'background:#fff', 'color:#374151', 'cursor:pointer',
+      'font-size:15px',
+    ].join(';'));
+
+    function dong() { if (nen.parentNode) nen.parentNode.removeChild(nen); }
+
+    bAnh.onclick = function () { dong(); khiChon('png'); };
+    bPdf.onclick = function () { dong(); khiChon('pdf'); };
+    bHuy.onclick = dong;
+    nen.onclick = function (e) { if (e.target === nen) dong(); };
+
+    hop.appendChild(tieuDe);
+    hop.appendChild(moTa);
+    hop.appendChild(bAnh);
+    hop.appendChild(bPdf);
+    hop.appendChild(bHuy);
+    nen.appendChild(hop);
+    document.body.appendChild(nen);
+    bAnh.focus();
+  }
+
+  // Chặn cú bấm đầu tiên để hỏi định dạng, rồi bấm lại để bản gốc chạy tiếp.
+  document.addEventListener('click', function (e) {
+    var nutChup = e.target && e.target.closest && e.target.closest('#screenshot-btn');
+    if (!nutChup || dangChoLai) return;
+    e.preventDefault();
+    e.stopImmediatePropagation();
+    hopChon(function (dinhDang) {
+      dinhDangChon = dinhDang;
+      dangChoLai = true;
+      try {
+        nutChup.click();
+      } finally {
+        dangChoLai = false;
+      }
+    });
+  }, true);
+
+  // ---------------------------------------------------------- dựng PDF
+
+  var JSPDF_CDN = 'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js';
+
+  function napJsPDF() {
+    var co = (window.jspdf && window.jspdf.jsPDF) || window.jsPDF;
+    if (co) return Promise.resolve(co);
+    return new Promise(function (giai, tuChoi) {
+      var s = document.createElement('script');
+      s.src = JSPDF_CDN;
+      s.onload = function () {
+        var f = (window.jspdf && window.jspdf.jsPDF) || window.jsPDF;
+        f ? giai(f) : tuChoi(new Error('Không nạp được thư viện PDF'));
+      };
+      s.onerror = function () { tuChoi(new Error('Không tải được thư viện PDF')); };
+      document.head.appendChild(s);
+    });
+  }
+
+  /** Xuất canvas thành PDF một trang dài, giữ nguyên tỉ lệ bản đồ. */
+  function xuatPDF(canvas, ten) {
+    return napJsPDF().then(function (jsPDF) {
+      var rongMm = 210;                                    // bằng khổ A4
+      var caoMm = rongMm * (canvas.height / canvas.width);
+      var pdf = new jsPDF({
+        orientation: caoMm >= rongMm ? 'portrait' : 'landscape',
+        unit: 'mm',
+        format: [rongMm, caoMm],
+        compress: true,
+      });
+      var anh = canvas.__toDataURLGoc
+        ? canvas.__toDataURLGoc('image/jpeg', 0.95)
+        : canvas.toDataURL('image/jpeg', 0.95);
+      pdf.addImage(anh, 'JPEG', 0, 0, rongMm, caoMm, undefined, 'FAST');
+      pdf.save(ten);
+      if (window.__BELI_XUAT) window.__BELI_XUAT.pdfMm = Math.round(rongMm) + ' x ' + Math.round(caoMm);
+    });
+  }
+
   function luuTep(blob, ten) {
     var url = URL.createObjectURL(blob);
     var a = document.createElement('a');
@@ -152,6 +281,14 @@
 
   function taiAnhVeMay(t) {
     var ten = t.file_name || 'ban-do-cuoc-doi.png';
+
+    if (dinhDangChon === 'pdf' && t.base64_image === THE_CANVAS && canvasCuoi) {
+      xuatPDF(canvasCuoi, ten.replace(/\.png$/i, '') + '.pdf').catch(function (e) {
+        alert('Không tạo được PDF: ' + e.message + '. Bạn thử tải ảnh PNG nhé.');
+      });
+      return { result: true, message: '', fileUrl: '' };
+    }
+
     try {
       if (t.base64_image === THE_CANVAS && canvasCuoi) {
         // toBlob nhanh hơn và tốn ít bộ nhớ hơn hẳn so với chuỗi base64
