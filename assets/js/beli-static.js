@@ -78,14 +78,100 @@
     });
   }
 
-  function taiAnhVeMay(t) {
+  // ---------------------------------------------------------- xuất ảnh nét
+
+  var THE_CANVAS = 'beli-canvas://ban-do';
+  var canvasCuoi = null;
+
+  /**
+   * Mức phóng lớn nhất còn an toàn.
+   *
+   * Trình duyệt giới hạn cả chiều dài mỗi cạnh lẫn tổng số điểm ảnh của canvas;
+   * vượt ngưỡng thì ảnh ra trắng trơn hoặc tab bị treo. Bản đồ rất cao (gần
+   * 4000px) nên cạnh mới là ràng buộc chính chứ không phải diện tích.
+   */
+  function mucPhong(el) {
+    var rong = el.scrollWidth || el.offsetWidth || 1;
+    var cao = el.scrollHeight || el.offsetHeight || 1;
+    var diDong = Math.min(window.innerWidth, window.innerHeight) < 768;
+    var canhToiDa = 16000;                        // giới hạn thực tế ~16384
+    var diemAnhToiDa = diDong ? 30e6 : 60e6;      // máy điện thoại ít bộ nhớ hơn
+    var tran = Math.min(
+      canhToiDa / rong,
+      canhToiDa / cao,
+      Math.sqrt(diemAnhToiDa / (rong * cao))
+    );
+    return Math.max(1, Math.min(4, Math.floor(tran * 10) / 10));
+  }
+
+  // Bọc html2canvas để ép mức phóng cao. Dùng get/set vì thư viện có thể được
+  // gán sau file này.
+  (function bocHtml2canvas() {
+    var thuc = window.html2canvas;
+    function bocLai(fn) {
+      return function (el, opts) {
+        var o = {};
+        for (var k in (opts || {})) o[k] = opts[k];
+        o.scale = mucPhong(el);
+        o.useCORS = true;
+        o.allowTaint = false;       // giữ canvas xuất được, không bị "nhiễm"
+        o.backgroundColor = '#ffffff';
+        o.imageTimeout = 0;
+        o.logging = false;
+        return fn(el, o).then(function (canvas) {
+          canvasCuoi = canvas;
+          window.__BELI_XUAT = { rong: canvas.width, cao: canvas.height, mucPhong: o.scale };
+          // Trả về thẻ ngắn thay cho chuỗi base64 hàng chục MB: bản gốc sẽ
+          // nhét chuỗi này vào một lời gọi ajax, mà mình chặn lời gọi đó rồi.
+          canvas.toDataURL = function () { return THE_CANVAS; };
+          return canvas;
+        });
+      };
+    }
     try {
-      var a = document.createElement('a');
-      a.href = t.base64_image || '';
-      a.download = t.file_name || 'ban-do-cuoc-doi.png';
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
+      Object.defineProperty(window, 'html2canvas', {
+        configurable: true,
+        get: function () { return thuc ? bocLai(thuc) : undefined; },
+        set: function (v) { thuc = v; },
+      });
+    } catch (e) {
+      if (thuc) window.html2canvas = bocLai(thuc);
+    }
+  })();
+
+  function luuTep(blob, ten) {
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement('a');
+    a.href = url;
+    a.download = ten;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    setTimeout(function () { URL.revokeObjectURL(url); }, 60000);
+  }
+
+  function taiAnhVeMay(t) {
+    var ten = t.file_name || 'ban-do-cuoc-doi.png';
+    try {
+      if (t.base64_image === THE_CANVAS && canvasCuoi) {
+        // toBlob nhanh hơn và tốn ít bộ nhớ hơn hẳn so với chuỗi base64
+        if (canvasCuoi.toBlob) {
+          canvasCuoi.toBlob(function (b) {
+            if (b) {
+              if (window.__BELI_XUAT) window.__BELI_XUAT.dungLuong = b.size;
+              luuTep(b, ten);
+            }
+          }, 'image/png');
+        } else {
+          luuTep(new Blob([canvasCuoi.toDataURL('image/png')]), ten);
+        }
+      } else if (t.base64_image) {
+        var phan = String(t.base64_image).split(',');
+        var nhiPhan = atob(phan[1] || phan[0]);
+        var mang = new Uint8Array(nhiPhan.length);
+        for (var i = 0; i < nhiPhan.length; i++) mang[i] = nhiPhan.charCodeAt(i);
+        luuTep(new Blob([mang], { type: 'image/png' }), ten);
+      }
     } catch (e) {
       /* trình duyệt chặn thì thôi, phần dọn giao diện vẫn phải chạy tiếp */
     }
@@ -157,10 +243,13 @@
     }
   };
 
-  // Bản gốc mở tab mới tới fileUrl; fileUrl rỗng thì bỏ qua.
+  // Bản gốc mở tab mới tới fileUrl của ảnh đã lưu trên máy chủ. Bản tĩnh tải
+  // thẳng về máy nên fileUrl rỗng, và bản gốc vẫn nối thêm "?nocache=..." rồi
+  // gọi mở — thành ra mở lại chính trang này. Chặn cả hai trường hợp đó.
   var moGoc = window.open;
   window.open = function (url) {
-    if (!url) return null;
+    var u = String(url || '');
+    if (!u || u.charAt(0) === '?' || u.charAt(0) === '&') return null;
     return moGoc.apply(window, arguments);
   };
 })();
