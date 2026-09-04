@@ -15,53 +15,6 @@
    Sửa hiển thị (chỉ CSS, không đụng tới cách tính chỉ số)
    ------------------------------------------------------------------ */
 
-/* 1. Tương phản chữ.
-   Xanh #3B82F6 trên nền trắng chỉ đạt 3.7:1, dưới chuẩn WCAG AA (4.5:1).
-   Đổi sang #2563EB được 5.2:1 mà nhìn gần như không khác. */
-.text-blue-500,
-.color-blue {
-  color: #2563eb !important;
-}
-
-/* Tiêu đề hồng #EC4899 chỉ đạt 3.5:1, dùng ở 30 chỗ (tên mục, đầu bảng).
-   Trang dùng cả hai tên lớp cho cùng màu này, phải phủ cả hai. */
-.text-pink-500,
-.color-pink {
-  color: #be185d !important;
-}
-
-/* Các màu ngũ hành chỉ làm đậm trong cùng tông, không đổi sắc, để giữ ý nghĩa
-   Kim - Mộc - Thuỷ - Hoả - Thổ. Vàng #EAB308 là tệ nhất, chỉ 1.9:1. */
-.text-yellow-500 {
-  color: #a16207 !important;
-}
-
-.bg-yellow-500 {
-  background-color: #a16207 !important;
-}
-
-.text-red-500 {
-  color: #dc2626 !important;
-}
-
-.bg-red-500 {
-  background-color: #b91c1c !important;
-}
-
-.text-green-500 {
-  color: #15803d !important;
-}
-
-/* Nút "Xác thực": trắng trên #04AA6D chỉ đạt 3.0:1 -> đổi nền đậm hơn. */
-#readerInfoAuthenticateDataByPostApi {
-  background-color: #04724a !important;
-}
-
-/* Nút "Bỏ Qua": trắng trên đỏ nguyên #FF0000 chỉ đạt 4.0:1. */
-#readerInfoAuthenticateClosePopup {
-  background-color: #c62828 !important;
-}
-
 /* 2. Cỡ chữ và vùng chạm.
    Các số trong kim tự tháp đang 11px, hơi nhỏ để đọc trên điện thoại. */
 .itemKimTuDo {
