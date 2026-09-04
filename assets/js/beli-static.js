@@ -107,29 +107,62 @@
     return Math.max(1, Math.min(4, Math.floor(tran * 10) / 10));
   }
 
+  /**
+   * Đợi font và ảnh bên trong vùng chụp tải ổn định trước khi chụp.
+   *
+   * Máy nhanh máy chậm tải font/ảnh xong ở thời điểm khác nhau; nếu chụp
+   * ngay lúc font web chưa kịp áp (chữ tạm hiện bằng font hệ thống, chiều
+   * rộng khác) hoặc ảnh trong bản đồ chưa giải mã xong, ảnh/PDF xuất ra sẽ
+   * lệch dòng hoặc có vùng trắng tuỳ máy. Đợi xong rồi mới đo kích thước và
+   * chụp thì mọi máy cho ra cùng một kết quả.
+   */
+  function doiOnDinh(el) {
+    var doiFont = (document.fonts && document.fonts.ready)
+      ? document.fonts.ready.catch(function () {})
+      : Promise.resolve();
+    var anhs = el && el.querySelectorAll ? el.querySelectorAll('img') : [];
+    var doiAnh = Array.prototype.map.call(anhs, function (img) {
+      if (img.complete && img.naturalWidth > 0) return Promise.resolve();
+      if (img.decode) return img.decode().catch(function () {});
+      return new Promise(function (giai) {
+        img.addEventListener('load', giai, { once: true });
+        img.addEventListener('error', giai, { once: true });
+        setTimeout(giai, 4000); // ảnh lỗi/mạng chậm thì thôi, đừng treo mãi
+      });
+    });
+    return Promise.all([doiFont].concat(doiAnh)).then(function () {
+      // Hai khung hình để trình duyệt vẽ lại xong sau khi font/ảnh đã sẵn sàng.
+      return new Promise(function (giai) {
+        requestAnimationFrame(function () { requestAnimationFrame(giai); });
+      });
+    });
+  }
+
   // Bọc html2canvas để ép mức phóng cao. Dùng get/set vì thư viện có thể được
   // gán sau file này.
   (function bocHtml2canvas() {
     var thuc = window.html2canvas;
     function bocLai(fn) {
       return function (el, opts) {
-        var o = {};
-        for (var k in (opts || {})) o[k] = opts[k];
-        o.scale = mucPhong(el);
-        o.useCORS = true;
-        o.allowTaint = false;       // giữ canvas xuất được, không bị "nhiễm"
-        o.backgroundColor = '#ffffff';
-        o.imageTimeout = 0;
-        o.logging = false;
-        return fn(el, o).then(function (canvas) {
-          canvasCuoi = canvas;
-          window.__BELI_XUAT = { rong: canvas.width, cao: canvas.height, mucPhong: o.scale };
-          // Trả về thẻ ngắn thay cho chuỗi base64 hàng chục MB: bản gốc sẽ
-          // nhét chuỗi này vào một lời gọi ajax, mà mình chặn lời gọi đó rồi.
-          // Vẫn giữ hàm gốc để lúc dựng PDF còn lấy được ảnh thật.
-          canvas.__toDataURLGoc = HTMLCanvasElement.prototype.toDataURL.bind(canvas);
-          canvas.toDataURL = function () { return THE_CANVAS; };
-          return canvas;
+        return doiOnDinh(el).then(function () {
+          var o = {};
+          for (var k in (opts || {})) o[k] = opts[k];
+          o.scale = mucPhong(el);
+          o.useCORS = true;
+          o.allowTaint = false;       // giữ canvas xuất được, không bị "nhiễm"
+          o.backgroundColor = '#ffffff';
+          o.imageTimeout = 0;
+          o.logging = false;
+          return fn(el, o).then(function (canvas) {
+            canvasCuoi = canvas;
+            window.__BELI_XUAT = { rong: canvas.width, cao: canvas.height, mucPhong: o.scale };
+            // Trả về thẻ ngắn thay cho chuỗi base64 hàng chục MB: bản gốc sẽ
+            // nhét chuỗi này vào một lời gọi ajax, mà mình chặn lời gọi đó rồi.
+            // Vẫn giữ hàm gốc để lúc dựng PDF còn lấy được ảnh thật.
+            canvas.__toDataURLGoc = HTMLCanvasElement.prototype.toDataURL.bind(canvas);
+            canvas.toDataURL = function () { return THE_CANVAS; };
+            return canvas;
+          });
         });
       };
     }
