@@ -3,115 +3,267 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Quản trị thành viên — Beli</title>
+<title>Thành viên ‹ Beli — Quản trị</title>
 <style>
-  :root { --teal: #00afa0; --teal-dark: #009e92; }
+  :root {
+    --wp-bg: #f0f0f1;
+    --wp-dark: #1d2327;
+    --wp-dark-2: #2c3338;
+    --wp-blue: #2271b1;
+    --wp-blue-hover: #135e96;
+    --wp-text: #3c434a;
+    --wp-text-light: #646970;
+    --wp-border: #c3c4c7;
+    --wp-green: #00a32a;
+    --wp-red: #d63638;
+  }
   * { box-sizing: border-box; }
+  html { font-size: 13px; }
   body {
-    margin: 0; font-family: Arial, "Segoe UI", sans-serif; background: #f4f6f7;
-    color: #222; font-size: 14px;
+    margin: 0; background: var(--wp-bg); color: var(--wp-text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    line-height: 1.4;
   }
-  header {
-    background: var(--teal); color: #fff; padding: 16px 20px;
-    font-size: 20px; font-weight: 700;
-  }
-  main { max-width: 1100px; margin: 0 auto; padding: 20px; }
-  .the {
-    background: #fff; border: 1px solid #e0e0e0; border-radius: 8px;
-    padding: 20px; margin-bottom: 20px;
-  }
-  label { display: block; font-weight: 600; margin-bottom: 4px; margin-top: 10px; }
-  input, select {
-    width: 100%; padding: 8px 10px; border: 1px solid #ccc; border-radius: 6px;
-    font-size: 14px;
-  }
-  button {
-    cursor: pointer; border: 0; border-radius: 6px; padding: 10px 16px;
-    font-size: 14px; font-weight: 600; color: #fff; background: var(--teal-dark);
-    margin-top: 14px;
-  }
-  button:hover { opacity: .9; }
-  button.phu { background: #6b7280; }
-  table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 13px; }
-  th, td { border: 1px solid #e5e7eb; padding: 6px 8px; text-align: left; }
-  th { background: #f0f2f3; }
-  tr.dang-sua { background: #fff7e6; }
-  .thongbao { padding: 10px 14px; border-radius: 6px; margin-bottom: 14px; font-weight: 600; }
-  .thongbao.loi { background: #fee2e2; color: #b91c1c; }
-  .thongbao.ok { background: #dcfce7; color: #15803d; }
-  .hang-nut { display: flex; gap: 8px; flex-wrap: wrap; }
+  a { color: var(--wp-blue); text-decoration: none; }
+  a:hover { color: var(--wp-blue-hover); text-decoration: underline; }
   .an { display: none !important; }
-  .nho { font-size: 12px; color: #6b7280; }
+
+  /* ---------------------------------------------------------- thanh trên */
+  #wpadminbar {
+    height: 32px; background: var(--wp-dark); color: #eee;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0 12px; font-size: 13px; position: sticky; top: 0; z-index: 20;
+  }
+  #wpadminbar .ten-site { color: #fff; font-weight: 600; }
+  #wpadminbar .ai-dang-vao { color: rgba(240,246,252,.7); }
+  #wpadminbar .ai-dang-vao b { color: #fff; font-weight: 600; }
+  #wpadminbar button {
+    background: none; border: 0; color: rgba(240,246,252,.8); cursor: pointer;
+    font-size: 13px; padding: 4px 8px; border-radius: 2px;
+  }
+  #wpadminbar button:hover { color: #72aee6; }
+
+  /* ---------------------------------------------------------- khung chính */
+  #wpwrap { display: flex; align-items: stretch; min-height: calc(100vh - 32px); }
+
+  #adminmenu {
+    width: 160px; flex: 0 0 160px; background: var(--wp-dark); padding-top: 8px;
+  }
+  #adminmenu .menu-top {
+    display: flex; align-items: center; gap: 8px; padding: 8px 12px;
+    color: rgba(240,246,252,.7); font-size: 14px; cursor: default;
+  }
+  #adminmenu .menu-top.current { background: var(--wp-blue); color: #fff; }
+  #adminmenu .menu-top .dashicon { font-size: 16px; }
+
+  #wpcontent { flex: 1 1 auto; padding: 20px 20px 40px; min-width: 0; }
+
+  .wrap { max-width: 1100px; }
+  h1.wp-heading-inline { font-size: 23px; font-weight: 400; margin: 0 8px 0 0; display: inline-block; }
+  .page-title-action {
+    display: inline-block; border: 1px solid var(--wp-blue); border-radius: 3px;
+    background: #f6f7f7; color: var(--wp-blue); padding: 4px 10px; font-size: 13px;
+    margin-left: 4px; vertical-align: middle; cursor: pointer;
+  }
+  .page-title-action:hover { background: #f0f0f1; text-decoration: none; }
+  hr.wp-header-end { border: 0; border-top: 1px solid transparent; margin: 0 0 16px; }
+
+  /* ---------------------------------------------------------- thông báo */
+  .notice {
+    background: #fff; border-left: 4px solid var(--wp-blue); box-shadow: 0 1px 1px rgba(0,0,0,.04);
+    padding: 8px 12px; margin: 8px 0 16px; font-size: 14px;
+  }
+  .notice-success { border-left-color: var(--wp-green); }
+  .notice-error { border-left-color: var(--wp-red); }
+
+  /* ---------------------------------------------------------- bảng danh sách */
+  table.wp-list-table { width: 100%; border-spacing: 0; margin-top: 10px; background: #fff; }
+  table.wp-list-table th {
+    text-align: left; font-weight: 600; padding: 8px 10px; border-bottom: 1px solid var(--wp-border);
+    font-size: 13px;
+  }
+  table.wp-list-table td { padding: 10px; border-bottom: 1px solid var(--wp-border); vertical-align: middle; }
+  table.wp-list-table tbody tr:nth-child(even) { background: #f6f7f7; }
+  table.wp-list-table tbody tr:hover { background: #f0f6fc; }
+  .cot-chinh { font-weight: 600; }
+  .row-actions { visibility: hidden; font-size: 13px; color: var(--wp-text-light); margin-top: 2px; }
+  tr:hover .row-actions { visibility: visible; }
+  .row-actions a { cursor: pointer; }
+  .badge-goi {
+    display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 12px;
+    background: #f0f0f1; color: var(--wp-text);
+  }
+  .badge-goi.admin { background: #d63638; color: #fff; }
+  .badge-goi.giangvien { background: #2271b1; color: #fff; }
+  .badge-goi.hv_coach { background: #00a32a; color: #fff; }
+  .badge-goi.hv_basic { background: #dba617; color: #fff; }
+
+  /* ---------------------------------------------------------- postbox / form */
+  .postbox {
+    background: #fff; border: 1px solid var(--wp-border); border-radius: 4px;
+    box-shadow: 0 1px 1px rgba(0,0,0,.04); margin-top: 20px;
+  }
+  .postbox > h2 {
+    font-size: 14px; margin: 0; padding: 10px 14px; border-bottom: 1px solid var(--wp-border);
+    background: #f6f7f7;
+  }
+  .postbox .inside { padding: 14px; }
+  table.form-table { width: 100%; border-collapse: collapse; }
+  table.form-table th {
+    width: 180px; text-align: left; font-weight: 600; padding: 12px 10px 12px 0;
+    vertical-align: top; font-size: 13px;
+  }
+  table.form-table td { padding: 8px 10px; }
+  input.regular-text, select.regular-text {
+    width: 100%; max-width: 320px; padding: 5px 8px; border: 1px solid #8c8f94;
+    border-radius: 4px; font-size: 14px; background: #fff; color: var(--wp-text);
+  }
+  input:focus, select:focus, button:focus { outline: 2px solid #2271b1; outline-offset: -1px; }
+  .desc-nho { color: var(--wp-text-light); font-size: 12px; margin-top: 4px; }
+
+  /* ---------------------------------------------------------- nút */
+  .button {
+    display: inline-block; cursor: pointer; border: 1px solid var(--wp-blue); border-radius: 3px;
+    background: #f6f7f7; color: var(--wp-blue); padding: 5px 12px; font-size: 13px;
+    line-height: 1.5; margin: 0;
+  }
+  .button:hover { background: #f0f0f1; text-decoration: none; }
+  .button-primary {
+    background: var(--wp-blue); border-color: var(--wp-blue); color: #fff;
+  }
+  .button-primary:hover { background: var(--wp-blue-hover); border-color: var(--wp-blue-hover); }
+  .hang-nut { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin-top: 6px; }
+
+  /* ---------------------------------------------------------- màn đăng nhập kiểu wp-login */
+  #trangDangNhap { min-height: 100vh; display: flex; align-items: center; justify-content: center; }
+  #trangDangNhap .khung { width: 320px; }
+  #trangDangNhap .logo {
+    text-align: center; margin-bottom: 20px; font-size: 22px; font-weight: 600;
+    color: var(--wp-text);
+  }
+  #trangDangNhap .logo span { color: var(--wp-blue); }
+  #trangDangNhap .hop {
+    background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,.08); padding: 26px 24px; border-radius: 2px;
+  }
+  #trangDangNhap label { display: block; font-size: 14px; margin-bottom: 4px; color: var(--wp-text); }
+  #trangDangNhap input {
+    width: 100%; font-size: 22px; padding: 4px 8px; border: 1px solid #8c8f94;
+    border-radius: 4px; margin-bottom: 16px;
+  }
+  #trangDangNhap .quaylai { text-align: center; margin-top: 20px; font-size: 13px; }
+  #trangDangNhap .quaylai a { color: var(--wp-text-light); }
 </style>
 </head>
 <body>
 
-<header>Quản trị thành viên — Beli</header>
+<!-- ==================================================================== ĐĂNG NHẬP ==================================================================== -->
+<div id="trangDangNhap">
+  <div class="khung">
+    <div class="logo">Beli <span>Quản trị</span></div>
+    <div class="hop">
+      <div id="baoLoiDangNhap"></div>
+      <label for="dnDinhDanh">Email hoặc số điện thoại</label>
+      <input id="dnDinhDanh" placeholder="ban@gmail.com" autocomplete="username">
+      <label for="dnCode">Code</label>
+      <input id="dnCode" placeholder="Mã xác thực" autocomplete="current-password">
+      <button id="btnDangNhap" class="button button-primary" style="width:100%; height:32px; font-size:14px;">Đăng Nhập</button>
+      <p class="desc-nho" style="margin-top:14px;">Dùng đúng email/số điện thoại và code của tài khoản có gói <b>admin</b>.</p>
+    </div>
+    <div class="quaylai"><a href="index.html">&larr; Về trang tra cứu</a></div>
+  </div>
+</div>
 
-<main>
+<!-- ==================================================================== KHU QUẢN TRỊ ==================================================================== -->
+<div id="khuQuanTri" class="an">
 
-  <!-- ------------------------------------------------------------ đăng nhập -->
-  <section id="khoiDangNhap" class="the">
-    <h2>Đăng nhập quản trị</h2>
-    <p class="nho">Dùng đúng email (hoặc số điện thoại) và mã code của tài khoản có gói <b>admin</b>.</p>
-    <div id="baoLoiDangNhap"></div>
-    <label>Email hoặc số điện thoại</label>
-    <input id="dnDinhDanh" placeholder="vd: ban@gmail.com">
-    <label>Code</label>
-    <input id="dnCode" placeholder="Mã xác thực">
-    <button id="btnDangNhap">Đăng nhập</button>
-  </section>
+  <div id="wpadminbar">
+    <span class="ten-site">Beli Mindfulness</span>
+    <span class="ai-dang-vao">Xin chào, <b id="tenAdminDangNhap"></b>
+      <button id="btnDangXuat">Đăng xuất</button>
+    </span>
+  </div>
 
-  <!-- ------------------------------------------------------------ khu quản trị -->
-  <section id="khoiQuanTri" class="an">
-    <div class="the">
-      <div class="hang-nut" style="justify-content: space-between; align-items: center;">
-        <h2 style="margin:0">Danh sách thành viên</h2>
-        <div class="hang-nut">
-          <button id="btnLamMoi" class="phu">Tải lại</button>
-          <button id="btnDangXuat" class="phu">Đăng xuất</button>
+  <div id="wpwrap">
+    <div id="adminmenu">
+      <div class="menu-top current"><span class="dashicon">👤</span> Thành viên</div>
+    </div>
+
+    <div id="wpcontent">
+      <div class="wrap">
+        <h1 class="wp-heading-inline">Thành viên</h1>
+        <span id="btnThemMoiTitle" class="page-title-action">Thêm mới</span>
+        <hr class="wp-header-end">
+
+        <div id="baoDanhSach"></div>
+
+        <table class="wp-list-table">
+          <thead>
+            <tr>
+              <th>Email</th>
+              <th>Số điện thoại</th>
+              <th>Gói</th>
+              <th>Tổng lượt</th>
+              <th>Đã dùng</th>
+            </tr>
+          </thead>
+          <tbody id="thanThanhVien"></tbody>
+        </table>
+
+        <div class="postbox" id="khoiForm">
+          <h2 id="tieuDeForm">Thêm thành viên mới</h2>
+          <div class="inside">
+            <div id="baoForm"></div>
+            <table class="form-table">
+              <tr>
+                <th><label for="fEmail">Email</label></th>
+                <td><input id="fEmail" class="regular-text" placeholder="vd: ban@gmail.com"></td>
+              </tr>
+              <tr>
+                <th><label for="fPhone">Số điện thoại</label></th>
+                <td><input id="fPhone" class="regular-text" placeholder="vd: 0912345678"></td>
+              </tr>
+              <tr>
+                <th><label for="fCode">Code</label></th>
+                <td>
+                  <input id="fCode" class="regular-text" placeholder="Mã để đăng nhập tra cứu">
+                  <p class="desc-nho">Mã này thành viên dùng để đăng nhập tra cứu ở trang chính.</p>
+                </td>
+              </tr>
+              <tr>
+                <th><label for="fUserType">Gói</label></th>
+                <td>
+                  <select id="fUserType" class="regular-text">
+                    <option value="khach">khach</option>
+                    <option value="hv_basic">hv_basic</option>
+                    <option value="hv_coach">hv_coach</option>
+                    <option value="giangvien">giangvien</option>
+                    <option value="admin">admin</option>
+                  </select>
+                </td>
+              </tr>
+              <tr>
+                <th><label for="fTongLuot">Tổng lượt tra cứu</label></th>
+                <td>
+                  <input id="fTongLuot" class="regular-text" type="number" min="0" value="0">
+                  <p class="desc-nho">0 = không giới hạn.</p>
+                </td>
+              </tr>
+              <tr>
+                <th><label for="fDaDung">Đã dùng</label></th>
+                <td><input id="fDaDung" class="regular-text" type="number" min="0" value="0"></td>
+              </tr>
+            </table>
+            <div class="hang-nut">
+              <button id="btnLuu" class="button button-primary">Lưu thành viên</button>
+              <button id="btnHuySua" class="button an">Huỷ sửa</button>
+            </div>
+          </div>
         </div>
-      </div>
-      <div id="baoDanhSach"></div>
-      <table>
-        <thead>
-          <tr>
-            <th>Email</th><th>SĐT</th><th>Gói</th><th>Tổng lượt</th><th>Đã dùng</th><th></th>
-          </tr>
-        </thead>
-        <tbody id="thanThanhVien"></tbody>
-      </table>
-    </div>
 
-    <div class="the">
-      <h2 id="tieuDeForm">Thêm thành viên mới</h2>
-      <div id="baoForm"></div>
-      <label>Email</label>
-      <input id="fEmail" placeholder="vd: ban@gmail.com">
-      <label>Số điện thoại</label>
-      <input id="fPhone" placeholder="vd: 0912345678">
-      <label>Code (mã xác thực)</label>
-      <input id="fCode" placeholder="Mã để đăng nhập tra cứu">
-      <label>Gói</label>
-      <select id="fUserType">
-        <option value="khach">khach</option>
-        <option value="hv_basic">hv_basic</option>
-        <option value="hv_coach">hv_coach</option>
-        <option value="giangvien">giangvien</option>
-        <option value="admin">admin</option>
-      </select>
-      <label>Tổng lượt tra cứu (0 = không giới hạn)</label>
-      <input id="fTongLuot" type="number" min="0" value="0">
-      <label>Đã dùng</label>
-      <input id="fDaDung" type="number" min="0" value="0">
-      <div class="hang-nut">
-        <button id="btnLuu">Lưu thành viên</button>
-        <button id="btnHuySua" class="phu an">Huỷ sửa</button>
       </div>
     </div>
-  </section>
-
-</main>
+  </div>
+</div>
 
 <script src="assets/js/beli-config.js"></script>
 <script>
@@ -130,7 +282,7 @@
   }
 
   function hienThongBao(el, chu, loai) {
-    el.innerHTML = chu ? '<div class="thongbao ' + loai + '">' + chu + '</div>' : '';
+    el.innerHTML = chu ? '<div class="notice notice-' + loai + '"><p>' + chu + '</p></div>' : '';
   }
 
   // -------------------------------------------------------------- đăng nhập
@@ -140,48 +292,68 @@
     var baoLoi = document.getElementById('baoLoiDangNhap');
     hienThongBao(baoLoi, '', '');
     if (!dinhDanh || !code) {
-      hienThongBao(baoLoi, 'Nhập đủ email/số điện thoại và code.', 'loi');
+      hienThongBao(baoLoi, 'Nhập đủ email/số điện thoại và code.', 'error');
       return;
     }
     goi('adminDangNhap', { email: dinhDanh, code: code }).then(function (kq) {
       if (!kq.result) {
-        hienThongBao(baoLoi, kq.message || 'Đăng nhập thất bại.', 'loi');
+        hienThongBao(baoLoi, kq.message || 'Đăng nhập thất bại.', 'error');
         return;
       }
       admin = { dinhDanh: dinhDanh, code: code };
       try { sessionStorage.setItem('beliAdmin', JSON.stringify(admin)); } catch (e) {}
-      document.getElementById('khoiDangNhap').classList.add('an');
-      document.getElementById('khoiQuanTri').classList.remove('an');
-      taiDanhSach();
+      vaoKhuQuanTri();
     }).catch(function () {
-      hienThongBao(baoLoi, 'Không gọi được máy chủ, thử lại sau.', 'loi');
+      hienThongBao(baoLoi, 'Không gọi được máy chủ, thử lại sau.', 'error');
     });
   });
+
+  document.getElementById('dnCode').addEventListener('keydown', function (e) {
+    if (e.key === 'Enter') document.getElementById('btnDangNhap').click();
+  });
+
+  function vaoKhuQuanTri() {
+    document.getElementById('trangDangNhap').classList.add('an');
+    document.getElementById('khuQuanTri').classList.remove('an');
+    document.getElementById('tenAdminDangNhap').textContent = admin.dinhDanh;
+    taiDanhSach();
+  }
 
   document.getElementById('btnDangXuat').addEventListener('click', function () {
     admin = null;
     try { sessionStorage.removeItem('beliAdmin'); } catch (e) {}
-    document.getElementById('khoiQuanTri').classList.add('an');
-    document.getElementById('khoiDangNhap').classList.remove('an');
+    document.getElementById('khuQuanTri').classList.add('an');
+    document.getElementById('trangDangNhap').classList.remove('an');
   });
 
   // -------------------------------------------------------------- danh sách
   function veHang(tv) {
     var tr = document.createElement('tr');
     function td(chu) { var t = document.createElement('td'); t.textContent = chu; return t; }
-    tr.appendChild(td(tv.email || ''));
+
+    var tdEmail = document.createElement('td');
+    tdEmail.className = 'cot-chinh';
+    tdEmail.textContent = tv.email || '(không có)';
+    var hanhDong = document.createElement('div');
+    hanhDong.className = 'row-actions';
+    var lSua = document.createElement('a');
+    lSua.textContent = 'Sửa';
+    lSua.addEventListener('click', function () { napVaoForm(tv); });
+    hanhDong.appendChild(lSua);
+    tdEmail.appendChild(hanhDong);
+    tr.appendChild(tdEmail);
+
     tr.appendChild(td(tv.phone || ''));
-    tr.appendChild(td(tv.userType || ''));
+
+    var tdGoi = document.createElement('td');
+    var badge = document.createElement('span');
+    badge.className = 'badge-goi ' + (tv.userType || '');
+    badge.textContent = tv.userType || '';
+    tdGoi.appendChild(badge);
+    tr.appendChild(tdGoi);
+
     tr.appendChild(td(String(tv.tongLuot || 0)));
     tr.appendChild(td(String(tv.daDung || 0)));
-
-    var tdNut = document.createElement('td');
-    var bSua = document.createElement('button');
-    bSua.textContent = 'Sửa';
-    bSua.className = 'phu';
-    bSua.addEventListener('click', function () { napVaoForm(tv); });
-    tdNut.appendChild(bSua);
-    tr.appendChild(tdNut);
     return tr;
   }
 
@@ -190,18 +362,16 @@
     hienThongBao(baoDanhSach, '', '');
     goi('adminDanhSachThanhVien', { adminEmail: admin.dinhDanh, adminCode: admin.code }).then(function (kq) {
       if (!kq.result) {
-        hienThongBao(baoDanhSach, kq.message || 'Không tải được danh sách.', 'loi');
+        hienThongBao(baoDanhSach, kq.message || 'Không tải được danh sách.', 'error');
         return;
       }
       var than = document.getElementById('thanThanhVien');
       than.innerHTML = '';
       (kq.danhSach || []).forEach(function (tv) { than.appendChild(veHang(tv)); });
     }).catch(function () {
-      hienThongBao(baoDanhSach, 'Không gọi được máy chủ, thử lại sau.', 'loi');
+      hienThongBao(baoDanhSach, 'Không gọi được máy chủ, thử lại sau.', 'error');
     });
   }
-
-  document.getElementById('btnLamMoi').addEventListener('click', taiDanhSach);
 
   // -------------------------------------------------------------- form thêm/sửa
   function datLaiForm() {
@@ -226,10 +396,14 @@
     document.getElementById('fUserType').value = tv.userType || 'khach';
     document.getElementById('fTongLuot').value = tv.tongLuot || 0;
     document.getElementById('fDaDung').value = tv.daDung || 0;
-    window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+    document.getElementById('khoiForm').scrollIntoView({ behavior: 'smooth', block: 'start' });
   }
 
   document.getElementById('btnHuySua').addEventListener('click', datLaiForm);
+  document.getElementById('btnThemMoiTitle').addEventListener('click', function () {
+    datLaiForm();
+    document.getElementById('khoiForm').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  });
 
   document.getElementById('btnLuu').addEventListener('click', function () {
     var baoForm = document.getElementById('baoForm');
@@ -246,13 +420,13 @@
     if (dinhDanhDangSua) than.dinhDanhCu = dinhDanhDangSua;
 
     goi('adminLuuThanhVien', than).then(function (kq) {
-      hienThongBao(baoForm, kq.message || (kq.result ? 'Đã lưu.' : 'Lưu thất bại.'), kq.result ? 'ok' : 'loi');
+      hienThongBao(baoForm, kq.message || (kq.result ? 'Đã lưu.' : 'Lưu thất bại.'), kq.result ? 'success' : 'error');
       if (kq.result) {
         datLaiForm();
         taiDanhSach();
       }
     }).catch(function () {
-      hienThongBao(baoForm, 'Không gọi được máy chủ, thử lại sau.', 'loi');
+      hienThongBao(baoForm, 'Không gọi được máy chủ, thử lại sau.', 'error');
     });
   });
 
@@ -262,9 +436,7 @@
       var luu = sessionStorage.getItem('beliAdmin');
       if (!luu) return;
       admin = JSON.parse(luu);
-      document.getElementById('khoiDangNhap').classList.add('an');
-      document.getElementById('khoiQuanTri').classList.remove('an');
-      taiDanhSach();
+      vaoKhuQuanTri();
     } catch (e) {}
   })();
 })();
