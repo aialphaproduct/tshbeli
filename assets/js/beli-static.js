@@ -230,6 +230,143 @@
     }
   })();
 
+  // ---------------------------------------------------------- trình duyệt trong app (Zalo...)
+
+  // Zalo, Messenger, Instagram... mở link bằng trình duyệt riêng nhúng trong
+  // app, và trình duyệt đó thường CHẶN tải file (thẻ <a download>, blob URL
+  // không chạy). Không có cách nào ép các app này tải file bằng JS được —
+  // cách duy nhất là hướng dẫn người dùng tự mở link bằng Chrome/Safari.
+  function laTrinhDuyetTrongApp() {
+    return /Zalo|FBAN|FBAV|FB_IAB|Instagram|Line\/|MicroMessenger|TikTok/i.test(navigator.userAgent || '');
+  }
+
+  // Các ô dữ liệu cần giữ lại khi phải mở lại bằng trình duyệt khác — gồm cả
+  // trang tra cứu 1 người (không hậu tố) lẫn tra cứu cặp đôi (hậu tố 1/2).
+  var TRUONG_KHOI_PHUC = [
+    'hoTen', 'inputTenThuongGoi', 'ngay', 'thang', 'nam',
+    'hoTen1', 'inputTenThuongGoi1', 'ngay1', 'thang1', 'nam1',
+    'hoTen2', 'inputTenThuongGoi2', 'ngay2', 'thang2', 'nam2',
+  ];
+
+  /** Đường dẫn trang hiện tại kèm dữ liệu đã nhập, để mở lại không phải gõ tay. */
+  function taoLinkKhoiPhuc() {
+    var url = new URL(location.href);
+    url.search = '';
+    TRUONG_KHOI_PHUC.forEach(function (id) {
+      var el = document.getElementById(id);
+      if (el && el.value) url.searchParams.set(id, el.value);
+    });
+    return url.toString();
+  }
+
+  /** Lúc trang vừa mở: nếu link có kèm dữ liệu (từ hộp thoại trên) thì tự điền vào form. */
+  (function khoiPhucTuLink() {
+    var qs = new URLSearchParams(location.search);
+    if (!Array.from(qs.keys()).length) return;
+    document.addEventListener('DOMContentLoaded', function () {
+      TRUONG_KHOI_PHUC.forEach(function (id) {
+        var v = qs.get(id);
+        var el = document.getElementById(id);
+        if (!v || !el) return;
+        el.value = v;
+        el.dispatchEvent(new Event('input', { bubbles: true }));
+        el.dispatchEvent(new Event('change', { bubbles: true }));
+      });
+    });
+  })();
+
+  /** Hộp hướng dẫn mở bằng trình duyệt thật, kèm link đã có sẵn dữ liệu. */
+  function hopMoTrinhDuyet(khiVanMuonThuTai) {
+    var link = taoLinkKhoiPhuc();
+
+    var nen = document.createElement('div');
+    nen.setAttribute('style', [
+      'position:fixed', 'inset:0', 'background:rgba(0,0,0,.5)', 'z-index:99999',
+      'display:flex', 'align-items:center', 'justify-content:center', 'padding:16px',
+    ].join(';'));
+
+    var hop = document.createElement('div');
+    hop.setAttribute('style', [
+      'background:#fff', 'border-radius:12px', 'padding:24px', 'max-width:380px',
+      'width:100%', 'box-shadow:0 10px 40px rgba(0,0,0,.3)', 'text-align:center',
+      'font-family:inherit',
+    ].join(';'));
+
+    var tieuDe = document.createElement('div');
+    tieuDe.textContent = 'Mở bằng trình duyệt để tải file';
+    tieuDe.setAttribute('style', 'font-size:18px;font-weight:700;margin-bottom:6px;color:#1f2937');
+
+    var moTa = document.createElement('div');
+    moTa.innerHTML = 'Ứng dụng bạn đang mở (Zalo, Messenger...) không cho tải file trực tiếp. Chạm biểu tượng <b>⋮</b> hoặc <b>···</b> ở góc trên, chọn <b>"Mở bằng trình duyệt"</b> (Chrome/Safari), dữ liệu bạn đã nhập sẽ tự điền lại, không cần gõ lại.';
+    moTa.setAttribute('style', 'font-size:14px;color:#4b5563;margin-bottom:16px;text-align:left;line-height:1.5');
+
+    var oLink = document.createElement('input');
+    oLink.type = 'text';
+    oLink.readOnly = true;
+    oLink.value = link;
+    oLink.setAttribute('style', [
+      'display:block', 'width:100%', 'min-height:40px', 'margin-bottom:10px',
+      'padding:8px 10px', 'border:1px solid #d1d5db', 'border-radius:8px',
+      'font-size:13px', 'color:#374151', 'background:#f9fafb',
+    ].join(';'));
+    oLink.onclick = function () { oLink.select(); };
+
+    function nut(chu, mau, chuMau) {
+      var b = document.createElement('button');
+      b.type = 'button';
+      b.textContent = chu;
+      b.setAttribute('style', [
+        'display:block', 'width:100%', 'min-height:44px', 'margin-bottom:10px',
+        'padding:10px 14px', 'border:0', 'border-radius:8px', 'cursor:pointer',
+        'background:' + mau, 'color:' + chuMau, 'font-size:15px', 'font-weight:600',
+      ].join(';'));
+      return b;
+    }
+
+    var bSaoChep = nut('Sao chép link', '#1d4ed8', '#fff');
+    bSaoChep.onclick = function () {
+      var xong = function () { bSaoChep.textContent = 'Đã sao chép ✓'; setTimeout(function () { bSaoChep.textContent = 'Sao chép link'; }, 1500); };
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(link).then(xong).catch(function () { oLink.select(); document.execCommand('copy'); xong(); });
+      } else {
+        oLink.select();
+        try { document.execCommand('copy'); xong(); } catch (e) {}
+      }
+    };
+
+    var bVanThuTai = document.createElement('button');
+    bVanThuTai.type = 'button';
+    bVanThuTai.textContent = 'Vẫn thử tải trong này';
+    bVanThuTai.setAttribute('style', [
+      'display:block', 'width:100%', 'min-height:44px', 'border:1px solid #d1d5db',
+      'border-radius:8px', 'background:#fff', 'color:#374151', 'cursor:pointer',
+      'font-size:14px', 'margin-bottom:10px',
+    ].join(';'));
+
+    var bDong = document.createElement('button');
+    bDong.type = 'button';
+    bDong.textContent = 'Đóng';
+    bDong.setAttribute('style', [
+      'display:block', 'width:100%', 'min-height:36px', 'border:0',
+      'background:none', 'color:#9ca3af', 'cursor:pointer', 'font-size:13px',
+    ].join(';'));
+
+    function dong() { if (nen.parentNode) nen.parentNode.removeChild(nen); }
+
+    bVanThuTai.onclick = function () { dong(); khiVanMuonThuTai(); };
+    bDong.onclick = dong;
+    nen.onclick = function (e) { if (e.target === nen) dong(); };
+
+    hop.appendChild(tieuDe);
+    hop.appendChild(moTa);
+    hop.appendChild(oLink);
+    hop.appendChild(bSaoChep);
+    hop.appendChild(bVanThuTai);
+    hop.appendChild(bDong);
+    nen.appendChild(hop);
+    document.body.appendChild(nen);
+  }
+
   // ---------------------------------------------------------- chọn định dạng
 
   var dinhDangChon = 'png';     // 'png' hoặc 'pdf'
@@ -299,20 +436,31 @@
   }
 
   // Chặn cú bấm đầu tiên để hỏi định dạng, rồi bấm lại để bản gốc chạy tiếp.
+  // Trong app Zalo/Messenger... thì hỏi định dạng cũng vô ích vì tải sẽ thất
+  // bại, nên chặn sớm hơn để hướng dẫn mở bằng trình duyệt trước.
   document.addEventListener('click', function (e) {
     var nutChup = e.target && e.target.closest && e.target.closest('#screenshot-btn');
     if (!nutChup || dangChoLai) return;
     e.preventDefault();
     e.stopImmediatePropagation();
-    hopChon(function (dinhDang) {
-      dinhDangChon = dinhDang;
-      dangChoLai = true;
-      try {
-        nutChup.click();
-      } finally {
-        dangChoLai = false;
-      }
-    });
+
+    function hoiDinhDangRoiTai() {
+      hopChon(function (dinhDang) {
+        dinhDangChon = dinhDang;
+        dangChoLai = true;
+        try {
+          nutChup.click();
+        } finally {
+          dangChoLai = false;
+        }
+      });
+    }
+
+    if (laTrinhDuyetTrongApp()) {
+      hopMoTrinhDuyet(hoiDinhDangRoiTai);
+    } else {
+      hoiDinhDangRoiTai();
+    }
   }, true);
 
   // ---------------------------------------------------------- dựng PDF
