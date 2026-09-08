@@ -259,6 +259,25 @@
     return url.toString();
   }
 
+  /**
+   * Ghi dữ liệu hiện tại lên thanh địa chỉ (không tải lại trang), để nếu
+   * người dùng tự sao chép link từ trình duyệt (kể cả nút "Chia sẻ"/"Sao
+   * chép liên kết" có sẵn của Zalo, Messenger...) thì link đó cũng đã kèm
+   * sẵn dữ liệu, không cần đợi bấm nút tải ảnh mới có.
+   */
+  function ghiDuLieuLenDiaChi() {
+    try {
+      history.replaceState(null, '', taoLinkKhoiPhuc());
+    } catch (e) { /* trình duyệt cũ không hỗ trợ replaceState thì thôi */ }
+  }
+
+  // Cập nhật ngay khi bấm "Tra Cứu" — không đợi tính xong, vì dữ liệu cần
+  // ghi (họ tên, ngày sinh...) đã có sẵn trong form ngay lúc bấm rồi.
+  document.addEventListener('click', function (e) {
+    var nutTraCuu = e.target && e.target.closest && e.target.closest('#submitBtn');
+    if (nutTraCuu) ghiDuLieuLenDiaChi();
+  }, true);
+
   /** Lúc trang vừa mở: nếu link có kèm dữ liệu (từ hộp thoại trên) thì tự điền vào form. */
   (function khoiPhucTuLink() {
     var qs = new URLSearchParams(location.search);
