@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Quản trị thành viên — Beli</title>
+<style>
+  :root { --teal: #00afa0; --teal-dark: #009e92; }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; font-family: Arial, "Segoe UI", sans-serif; background: #f4f6f7;
+    color: #222; font-size: 14px;
+  }
+  header {
+    background: var(--teal); color: #fff; padding: 16px 20px;
+    font-size: 20px; font-weight: 700;
+  }
+  main { max-width: 1100px; margin: 0 auto; padding: 20px; }
+  .the {
+    background: #fff; border: 1px solid #e0e0e0; border-radius: 8px;
+    padding: 20px; margin-bottom: 20px;
+  }
+  label { display: block; font-weight: 600; margin-bottom: 4px; margin-top: 10px; }
+  input, select {
+    width: 100%; padding: 8px 10px; border: 1px solid #ccc; border-radius: 6px;
+    font-size: 14px;
+  }
+  button {
+    cursor: pointer; border: 0; border-radius: 6px; padding: 10px 16px;
+    font-size: 14px; font-weight: 600; color: #fff; background: var(--teal-dark);
+    margin-top: 14px;
+  }
+  button:hover { opacity: .9; }
+  button.phu { background: #6b7280; }
+  table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 13px; }
+  th, td { border: 1px solid #e5e7eb; padding: 6px 8px; text-align: left; }
+  th { background: #f0f2f3; }
+  tr.dang-sua { background: #fff7e6; }
+  .thongbao { padding: 10px 14px; border-radius: 6px; margin-bottom: 14px; font-weight: 600; }
+  .thongbao.loi { background: #fee2e2; color: #b91c1c; }
+  .thongbao.ok { background: #dcfce7; color: #15803d; }
+  .hang-nut { display: flex; gap: 8px; flex-wrap: wrap; }
+  .an { display: none !important; }
+  .nho { font-size: 12px; color: #6b7280; }
+</style>
+</head>
+<body>
+
+<header>Quản trị thành viên — Beli</header>
+
+<main>
+
+  <!-- ------------------------------------------------------------ đăng nhập -->
+  <section id="khoiDangNhap" class="the">
+    <h2>Đăng nhập quản trị</h2>
+    <p class="nho">Dùng đúng email (hoặc số điện thoại) và mã code của tài khoản có gói <b>admin</b>.</p>
+    <div id="baoLoiDangNhap"></div>
+    <label>Email hoặc số điện thoại</label>
+    <input id="dnDinhDanh" placeholder="vd: ban@gmail.com">
+    <label>Code</label>
+    <input id="dnCode" placeholder="Mã xác thực">
+    <button id="btnDangNhap">Đăng nhập</button>
+  </section>
+
+  <!-- ------------------------------------------------------------ khu quản trị -->
+  <section id="khoiQuanTri" class="an">
+    <div class="the">
+      <div class="hang-nut" style="justify-content: space-between; align-items: center;">
+        <h2 style="margin:0">Danh sách thành viên</h2>
+        <div class="hang-nut">
+          <button id="btnLamMoi" class="phu">Tải lại</button>
+          <button id="btnDangXuat" class="phu">Đăng xuất</button>
+        </div>
+      </div>
+      <div id="baoDanhSach"></div>
+      <table>
+        <thead>
+          <tr>
+            <th>Email</th><th>SĐT</th><th>Gói</th><th>Tổng lượt</th><th>Đã dùng</th><th></th>
+          </tr>
+        </thead>
+        <tbody id="thanThanhVien"></tbody>
+      </table>
+    </div>
+
+    <div class="the">
+      <h2 id="tieuDeForm">Thêm thành viên mới</h2>
+      <div id="baoForm"></div>
+      <label>Email</label>
+      <input id="fEmail" placeholder="vd: ban@gmail.com">
+      <label>Số điện thoại</label>
+      <input id="fPhone" placeholder="vd: 0912345678">
+      <label>Code (mã xác thực)</label>
+      <input id="fCode" placeholder="Mã để đăng nhập tra cứu">
+      <label>Gói</label>
+      <select id="fUserType">
+        <option value="khach">khach</option>
+        <option value="hv_basic">hv_basic</option>
+        <option value="hv_coach">hv_coach</option>
+        <option value="giangvien">giangvien</option>
+        <option value="admin">admin</option>
+      </select>
+      <label>Tổng lượt tra cứu (0 = không giới hạn)</label>
+      <input id="fTongLuot" type="number" min="0" value="0">
+      <label>Đã dùng</label>
+      <input id="fDaDung" type="number" min="0" value="0">
+      <div class="hang-nut">
+        <button id="btnLuu">Lưu thành viên</button>
+        <button id="btnHuySua" class="phu an">Huỷ sửa</button>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<script src="assets/js/beli-config.js"></script>
+<script>
+(function () {
+  var API = window.BELI_API_BASE || '';
+  var PREFIX = '/wp-json/readerinfo/v1/';
+  var admin = null;       // { dinhDanh, code }
+  var dinhDanhDangSua = null; // định danh cũ của dòng đang sửa, để API biết cần đổi khoá KV
+
+  function goi(ten, than) {
+    return fetch(API + PREFIX + ten, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: new URLSearchParams(than || {}),
+    }).then(function (r) { return r.json(); });
+  }
+
+  function hienThongBao(el, chu, loai) {
+    el.innerHTML = chu ? '<div class="thongbao ' + loai + '">' + chu + '</div>' : '';
+  }
+
+  // -------------------------------------------------------------- đăng nhập
+  document.getElementById('btnDangNhap').addEventListener('click', function () {
+    var dinhDanh = document.getElementById('dnDinhDanh').value.trim();
+    var code = document.getElementById('dnCode').value.trim();
+    var baoLoi = document.getElementById('baoLoiDangNhap');
+    hienThongBao(baoLoi, '', '');
+    if (!dinhDanh || !code) {
+      hienThongBao(baoLoi, 'Nhập đủ email/số điện thoại và code.', 'loi');
+      return;
+    }
+    goi('adminDangNhap', { email: dinhDanh, code: code }).then(function (kq) {
+      if (!kq.result) {
+        hienThongBao(baoLoi, kq.message || 'Đăng nhập thất bại.', 'loi');
+        return;
+      }
+      admin = { dinhDanh: dinhDanh, code: code };
+      try { sessionStorage.setItem('beliAdmin', JSON.stringify(admin)); } catch (e) {}
+      document.getElementById('khoiDangNhap').classList.add('an');
+      document.getElementById('khoiQuanTri').classList.remove('an');
+      taiDanhSach();
+    }).catch(function () {
+      hienThongBao(baoLoi, 'Không gọi được máy chủ, thử lại sau.', 'loi');
+    });
+  });
+
+  document.getElementById('btnDangXuat').addEventListener('click', function () {
+    admin = null;
+    try { sessionStorage.removeItem('beliAdmin'); } catch (e) {}
+    document.getElementById('khoiQuanTri').classList.add('an');
+    document.getElementById('khoiDangNhap').classList.remove('an');
+  });
+
+  // -------------------------------------------------------------- danh sách
+  function veHang(tv) {
+    var tr = document.createElement('tr');
+    function td(chu) { var t = document.createElement('td'); t.textContent = chu; return t; }
+    tr.appendChild(td(tv.email || ''));
+    tr.appendChild(td(tv.phone || ''));
+    tr.appendChild(td(tv.userType || ''));
+    tr.appendChild(td(String(tv.tongLuot || 0)));
+    tr.appendChild(td(String(tv.daDung || 0)));
+
+    var tdNut = document.createElement('td');
+    var bSua = document.createElement('button');
+    bSua.textContent = 'Sửa';
+    bSua.className = 'phu';
+    bSua.addEventListener('click', function () { napVaoForm(tv); });
+    tdNut.appendChild(bSua);
+    tr.appendChild(tdNut);
+    return tr;
+  }
+
+  function taiDanhSach() {
+    var baoDanhSach = document.getElementById('baoDanhSach');
+    hienThongBao(baoDanhSach, '', '');
+    goi('adminDanhSachThanhVien', { adminEmail: admin.dinhDanh, adminCode: admin.code }).then(function (kq) {
+      if (!kq.result) {
+        hienThongBao(baoDanhSach, kq.message || 'Không tải được danh sách.', 'loi');
+        return;
+      }
+      var than = document.getElementById('thanThanhVien');
+      than.innerHTML = '';
+      (kq.danhSach || []).forEach(function (tv) { than.appendChild(veHang(tv)); });
+    }).catch(function () {
+      hienThongBao(baoDanhSach, 'Không gọi được máy chủ, thử lại sau.', 'loi');
+    });
+  }
+
+  document.getElementById('btnLamMoi').addEventListener('click', taiDanhSach);
+
+  // -------------------------------------------------------------- form thêm/sửa
+  function datLaiForm() {
+    dinhDanhDangSua = null;
+    document.getElementById('tieuDeForm').textContent = 'Thêm thành viên mới';
+    document.getElementById('btnHuySua').classList.add('an');
+    document.getElementById('fEmail').value = '';
+    document.getElementById('fPhone').value = '';
+    document.getElementById('fCode').value = '';
+    document.getElementById('fUserType').value = 'khach';
+    document.getElementById('fTongLuot').value = 0;
+    document.getElementById('fDaDung').value = 0;
+  }
+
+  function napVaoForm(tv) {
+    dinhDanhDangSua = tv.email || tv.phone || '';
+    document.getElementById('tieuDeForm').textContent = 'Sửa thành viên: ' + dinhDanhDangSua;
+    document.getElementById('btnHuySua').classList.remove('an');
+    document.getElementById('fEmail').value = tv.email || '';
+    document.getElementById('fPhone').value = tv.phone || '';
+    document.getElementById('fCode').value = tv.code || '';
+    document.getElementById('fUserType').value = tv.userType || 'khach';
+    document.getElementById('fTongLuot').value = tv.tongLuot || 0;
+    document.getElementById('fDaDung').value = tv.daDung || 0;
+    window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+  }
+
+  document.getElementById('btnHuySua').addEventListener('click', datLaiForm);
+
+  document.getElementById('btnLuu').addEventListener('click', function () {
+    var baoForm = document.getElementById('baoForm');
+    hienThongBao(baoForm, '', '');
+    var than = {
+      adminEmail: admin.dinhDanh, adminCode: admin.code,
+      email: document.getElementById('fEmail').value.trim(),
+      phone: document.getElementById('fPhone').value.trim(),
+      code: document.getElementById('fCode').value.trim(),
+      userType: document.getElementById('fUserType').value,
+      tongLuot: document.getElementById('fTongLuot').value,
+      daDung: document.getElementById('fDaDung').value,
+    };
+    if (dinhDanhDangSua) than.dinhDanhCu = dinhDanhDangSua;
+
+    goi('adminLuuThanhVien', than).then(function (kq) {
+      hienThongBao(baoForm, kq.message || (kq.result ? 'Đã lưu.' : 'Lưu thất bại.'), kq.result ? 'ok' : 'loi');
+      if (kq.result) {
+        datLaiForm();
+        taiDanhSach();
+      }
+    }).catch(function () {
+      hienThongBao(baoForm, 'Không gọi được máy chủ, thử lại sau.', 'loi');
+    });
+  });
+
+  // -------------------------------------------------------------- khôi phục phiên
+  (function khoiPhuc() {
+    try {
+      var luu = sessionStorage.getItem('beliAdmin');
+      if (!luu) return;
+      admin = JSON.parse(luu);
+      document.getElementById('khoiDangNhap').classList.add('an');
+      document.getElementById('khoiQuanTri').classList.remove('an');
+      taiDanhSach();
+    } catch (e) {}
+  })();
+})();
+</script>
+
+</body>
+</html>
