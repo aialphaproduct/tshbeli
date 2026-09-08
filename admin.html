@@ -28,6 +28,24 @@
   a:hover { color: var(--wp-blue-hover); text-decoration: underline; }
   .an { display: none !important; }
 
+  /* ---------------------------------------------------------- thanh tiến trình */
+  #thanhTienTrinh {
+    position: fixed; top: 0; left: 0; height: 3px; width: 0%; background: #72aee6;
+    z-index: 100; transition: width .2s ease;
+  }
+  #thanhTienTrinh.chay {
+    width: 70%;
+    transition: width 6s cubic-bezier(0,.6,.4,1);
+  }
+  .spinner {
+    display: inline-block; width: 13px; height: 13px; border-radius: 50%;
+    border: 2px solid rgba(255,255,255,.4); border-top-color: #fff; vertical-align: -2px;
+    margin-right: 6px; animation: quay .7s linear infinite;
+  }
+  .spinner.toi { border-color: rgba(34,113,177,.25); border-top-color: var(--wp-blue); }
+  @keyframes quay { to { transform: rotate(360deg); } }
+  .dang-tai { color: var(--wp-text-light); padding: 14px 10px; font-size: 13px; }
+
   /* ---------------------------------------------------------- thanh trên */
   #wpadminbar {
     height: 32px; background: var(--wp-dark); color: #eee;
@@ -47,13 +65,14 @@
   #wpwrap { display: flex; align-items: stretch; min-height: calc(100vh - 32px); }
 
   #adminmenu {
-    width: 160px; flex: 0 0 160px; background: var(--wp-dark); padding-top: 8px;
+    width: 180px; flex: 0 0 180px; background: var(--wp-dark); padding-top: 8px;
   }
   #adminmenu .menu-top {
     display: flex; align-items: center; gap: 8px; padding: 8px 12px;
-    color: rgba(240,246,252,.7); font-size: 14px; cursor: default;
+    color: rgba(240,246,252,.7); font-size: 14px; cursor: pointer;
   }
-  #adminmenu .menu-top.current { background: var(--wp-blue); color: #fff; }
+  #adminmenu .menu-top:hover { background: var(--wp-dark-2); color: #fff; }
+  #adminmenu .menu-top.hien-tai { background: var(--wp-blue); color: #fff; }
   #adminmenu .menu-top .dashicon { font-size: 16px; }
 
   #wpcontent { flex: 1 1 auto; padding: 20px 20px 40px; min-width: 0; }
@@ -67,6 +86,7 @@
   }
   .page-title-action:hover { background: #f0f0f1; text-decoration: none; }
   hr.wp-header-end { border: 0; border-top: 1px solid transparent; margin: 0 0 16px; }
+  .mo-ta-trang { color: var(--wp-text-light); margin: -8px 0 6px; }
 
   /* ---------------------------------------------------------- thông báo */
   .notice {
@@ -89,6 +109,10 @@
   .row-actions { visibility: hidden; font-size: 13px; color: var(--wp-text-light); margin-top: 2px; }
   tr:hover .row-actions { visibility: visible; }
   .row-actions a { cursor: pointer; }
+  .noi-dung-rut-gon {
+    max-width: 360px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    color: var(--wp-text-light); display: block;
+  }
   .badge-goi {
     display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 12px;
     background: #f0f0f1; color: var(--wp-text);
@@ -118,7 +142,11 @@
     width: 100%; max-width: 320px; padding: 5px 8px; border: 1px solid #8c8f94;
     border-radius: 4px; font-size: 14px; background: #fff; color: var(--wp-text);
   }
-  input:focus, select:focus, button:focus { outline: 2px solid #2271b1; outline-offset: -1px; }
+  textarea.large-text {
+    width: 100%; max-width: 560px; min-height: 140px; padding: 6px 8px; border: 1px solid #8c8f94;
+    border-radius: 4px; font-size: 13px; font-family: Consolas, Menlo, monospace; color: var(--wp-text);
+  }
+  input:focus, select:focus, textarea:focus, button:focus { outline: 2px solid #2271b1; outline-offset: -1px; }
   .desc-nho { color: var(--wp-text-light); font-size: 12px; margin-top: 4px; }
 
   /* ---------------------------------------------------------- nút */
@@ -132,7 +160,22 @@
     background: var(--wp-blue); border-color: var(--wp-blue); color: #fff;
   }
   .button-primary:hover { background: var(--wp-blue-hover); border-color: var(--wp-blue-hover); }
+  .button[disabled] { opacity: .6; cursor: default; pointer-events: none; }
   .hang-nut { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin-top: 6px; }
+
+  /* ---------------------------------------------------------- tab chọn gói */
+  .tab-goi { display: flex; gap: 4px; border-bottom: 1px solid var(--wp-border); margin: 14px 0 0; flex-wrap: wrap; }
+  .tab-goi button {
+    border: 1px solid var(--wp-border); border-bottom: 0; background: #f0f0f1; color: var(--wp-text);
+    padding: 8px 14px; border-radius: 4px 4px 0 0; cursor: pointer; font-size: 13px; margin-bottom: -1px;
+  }
+  .tab-goi button.hien-tai { background: #fff; font-weight: 600; border-bottom: 1px solid #fff; }
+  .luoi-checkbox {
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 6px 16px;
+    background: #fff; border: 1px solid var(--wp-border); border-top: 0; padding: 16px; border-radius: 0 0 4px 4px;
+  }
+  .luoi-checkbox label { display: flex; align-items: center; gap: 8px; font-size: 13px; cursor: pointer; }
+  .luoi-checkbox input { width: 16px; height: 16px; }
 
   /* ---------------------------------------------------------- màn đăng nhập kiểu wp-login */
   #trangDangNhap { min-height: 100vh; display: flex; align-items: center; justify-content: center; }
@@ -155,6 +198,8 @@
 </style>
 </head>
 <body>
+
+<div id="thanhTienTrinh"></div>
 
 <!-- ==================================================================== ĐĂNG NHẬP ==================================================================== -->
 <div id="trangDangNhap">
@@ -185,11 +230,15 @@
 
   <div id="wpwrap">
     <div id="adminmenu">
-      <div class="menu-top current"><span class="dashicon">👤</span> Thành viên</div>
+      <div class="menu-top hien-tai" data-trang="thanhVien"><span class="dashicon">👤</span> Thành viên</div>
+      <div class="menu-top" data-trang="noiDung"><span class="dashicon">🗺️</span> Nội dung bản đồ</div>
+      <div class="menu-top" data-trang="hienThi"><span class="dashicon">👁️</span> Hiển thị theo gói</div>
     </div>
 
     <div id="wpcontent">
-      <div class="wrap">
+
+      <!-- ============================================================ TRANG: THÀNH VIÊN -->
+      <div class="wrap trang" id="trangThanhVien">
         <h1 class="wp-heading-inline">Thành viên</h1>
         <span id="btnThemMoiTitle" class="page-title-action">Thêm mới</span>
         <hr class="wp-header-end">
@@ -259,8 +308,77 @@
             </div>
           </div>
         </div>
-
       </div>
+
+      <!-- ============================================================ TRANG: NỘI DUNG BẢN ĐỒ -->
+      <div class="wrap trang an" id="trangNoiDung">
+        <h1 class="wp-heading-inline">Nội dung bản đồ</h1>
+        <span id="btnThemNoiDungTitle" class="page-title-action">Thêm mới</span>
+        <hr class="wp-header-end">
+        <p class="mo-ta-trang">Nội dung diễn giải hiện theo từng chỉ số trong bản đồ (popup giải thích). Xác định bằng 3 khoá: chuyên mục, typedata, keydata.</p>
+
+        <div id="baoDanhSachNoiDung"></div>
+
+        <table class="wp-list-table">
+          <thead>
+            <tr>
+              <th>Chuyên mục</th>
+              <th>Typedata</th>
+              <th>Keydata</th>
+              <th>Nội dung</th>
+            </tr>
+          </thead>
+          <tbody id="thanNoiDung"></tbody>
+        </table>
+
+        <div class="postbox" id="khoiFormNoiDung">
+          <h2 id="tieuDeFormNoiDung">Thêm nội dung mới</h2>
+          <div class="inside">
+            <div id="baoFormNoiDung"></div>
+            <table class="form-table">
+              <tr>
+                <th><label for="ndChuyenMuc">Chuyên mục</label></th>
+                <td>
+                  <input id="ndChuyenMuc" class="regular-text" placeholder="vd: Tổng Hợp">
+                  <p class="desc-nho">Trùng tên chuyên mục đang có trong trang tra cứu (vd: Tổng Hợp, Học thuật...), hoặc gõ tên mới.</p>
+                </td>
+              </tr>
+              <tr>
+                <th><label for="ndTypedata">Typedata</label></th>
+                <td><input id="ndTypedata" class="regular-text" placeholder="vd: banchat"></td>
+              </tr>
+              <tr>
+                <th><label for="ndKeydata">Keydata</label></th>
+                <td><input id="ndKeydata" class="regular-text" placeholder="vd: 0"></td>
+              </tr>
+              <tr>
+                <th><label for="ndNoiDung">Nội dung (HTML)</label></th>
+                <td><textarea id="ndNoiDung" class="large-text"></textarea></td>
+              </tr>
+            </table>
+            <div class="hang-nut">
+              <button id="btnLuuNoiDung" class="button button-primary">Lưu nội dung</button>
+              <button id="btnHuySuaNoiDung" class="button an">Huỷ sửa</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ============================================================ TRANG: HIỂN THỊ THEO GÓI -->
+      <div class="wrap trang an" id="trangHienThi">
+        <h1 class="wp-heading-inline">Hiển thị theo gói</h1>
+        <hr class="wp-header-end">
+        <p class="mo-ta-trang">Bật/tắt từng mục hiện ra trong bản đồ theo mỗi gói thành viên.</p>
+
+        <div id="baoHienThi"></div>
+        <div class="tab-goi" id="tabGoi"></div>
+        <div class="luoi-checkbox" id="luoiCheckbox"></div>
+
+        <div class="hang-nut">
+          <button id="btnLuuHienThi" class="button button-primary">Lưu cấu hình gói này</button>
+        </div>
+      </div>
+
     </div>
   </div>
 </div>
@@ -270,19 +388,54 @@
 (function () {
   var API = window.BELI_API_BASE || '';
   var PREFIX = '/wp-json/readerinfo/v1/';
-  var admin = null;       // { dinhDanh, code }
-  var dinhDanhDangSua = null; // định danh cũ của dòng đang sửa, để API biết cần đổi khoá KV
+  var admin = null;             // { dinhDanh, code }
+  var dinhDanhDangSua = null;   // định danh cũ của thành viên đang sửa
+  var ndDangSua = null;         // {chuyenMuc,typedata,keydata} của nội dung đang sửa
+  var hienThi = null;           // { danhSachGoi, cacMuc, cauHinh } tải từ máy chủ
+  var goiDangXem = null;        // gói đang chọn ở trang Hiển thị theo gói
+
+  // -------------------------------------------------------------- tiện ích chung
+  var demGoiDangChay = 0;
+  function batTienTrinh() {
+    demGoiDangChay++;
+    var t = document.getElementById('thanhTienTrinh');
+    t.classList.remove('chay'); void t.offsetWidth; t.classList.add('chay');
+  }
+  function tatTienTrinh() {
+    demGoiDangChay = Math.max(0, demGoiDangChay - 1);
+    if (demGoiDangChay > 0) return;
+    var t = document.getElementById('thanhTienTrinh');
+    t.style.transition = 'width .15s ease'; t.classList.remove('chay'); t.style.width = '100%';
+    setTimeout(function () { t.style.width = '0%'; t.style.transition = ''; }, 200);
+  }
 
   function goi(ten, than) {
+    batTienTrinh();
     return fetch(API + PREFIX + ten, {
       method: 'POST',
       headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
       body: new URLSearchParams(than || {}),
-    }).then(function (r) { return r.json(); });
+    }).then(function (r) { return r.json(); }).finally(tatTienTrinh);
   }
 
   function hienThongBao(el, chu, loai) {
     el.innerHTML = chu ? '<div class="notice notice-' + loai + '"><p>' + chu + '</p></div>' : '';
+  }
+
+  /** Đặt 1 nút vào trạng thái "đang xử lý": khoá nút, đổi chữ, có chấm quay. */
+  function dangXuLy(btn, dang, chuLucChay) {
+    if (dang) {
+      btn.dataset.chuGoc = btn.dataset.chuGoc || btn.textContent;
+      btn.disabled = true;
+      btn.innerHTML = '<span class="spinner"></span>' + (chuLucChay || 'Đang xử lý…');
+    } else {
+      btn.disabled = false;
+      btn.textContent = btn.dataset.chuGoc || btn.textContent;
+    }
+  }
+
+  function hienDangTai(el, chu) {
+    el.innerHTML = '<div class="dang-tai"><span class="spinner toi"></span>' + (chu || 'Đang tải…') + '</div>';
   }
 
   // -------------------------------------------------------------- đăng nhập
@@ -290,12 +443,15 @@
     var dinhDanh = document.getElementById('dnDinhDanh').value.trim();
     var code = document.getElementById('dnCode').value.trim();
     var baoLoi = document.getElementById('baoLoiDangNhap');
+    var btn = document.getElementById('btnDangNhap');
     hienThongBao(baoLoi, '', '');
     if (!dinhDanh || !code) {
       hienThongBao(baoLoi, 'Nhập đủ email/số điện thoại và code.', 'error');
       return;
     }
+    dangXuLy(btn, true, 'Đang đăng nhập…');
     goi('adminDangNhap', { email: dinhDanh, code: code }).then(function (kq) {
+      dangXuLy(btn, false);
       if (!kq.result) {
         hienThongBao(baoLoi, kq.message || 'Đăng nhập thất bại.', 'error');
         return;
@@ -304,6 +460,7 @@
       try { sessionStorage.setItem('beliAdmin', JSON.stringify(admin)); } catch (e) {}
       vaoKhuQuanTri();
     }).catch(function () {
+      dangXuLy(btn, false);
       hienThongBao(baoLoi, 'Không gọi được máy chủ, thử lại sau.', 'error');
     });
   });
@@ -326,7 +483,20 @@
     document.getElementById('trangDangNhap').classList.remove('an');
   });
 
-  // -------------------------------------------------------------- danh sách
+  // -------------------------------------------------------------- chuyển trang (sidebar)
+  var TRANG = { thanhVien: 'trangThanhVien', noiDung: 'trangNoiDung', hienThi: 'trangHienThi' };
+  document.querySelectorAll('#adminmenu .menu-top').forEach(function (nut) {
+    nut.addEventListener('click', function () {
+      document.querySelectorAll('#adminmenu .menu-top').forEach(function (n) { n.classList.remove('hien-tai'); });
+      nut.classList.add('hien-tai');
+      document.querySelectorAll('.trang').forEach(function (tr) { tr.classList.add('an'); });
+      document.getElementById(TRANG[nut.dataset.trang]).classList.remove('an');
+      if (nut.dataset.trang === 'noiDung' && !thanNoiDungDaTai) taiDanhSachNoiDung();
+      if (nut.dataset.trang === 'hienThi' && !hienThi) taiHienThi();
+    });
+  });
+
+  // ================================================================ TRANG THÀNH VIÊN
   function veHang(tv) {
     var tr = document.createElement('tr');
     function td(chu) { var t = document.createElement('td'); t.textContent = chu; return t; }
@@ -359,21 +529,23 @@
 
   function taiDanhSach() {
     var baoDanhSach = document.getElementById('baoDanhSach');
+    var than = document.getElementById('thanThanhVien');
     hienThongBao(baoDanhSach, '', '');
+    than.innerHTML = '<tr><td colspan="5"><div class="dang-tai"><span class="spinner toi"></span>Đang tải danh sách…</div></td></tr>';
     goi('adminDanhSachThanhVien', { adminEmail: admin.dinhDanh, adminCode: admin.code }).then(function (kq) {
       if (!kq.result) {
+        than.innerHTML = '';
         hienThongBao(baoDanhSach, kq.message || 'Không tải được danh sách.', 'error');
         return;
       }
-      var than = document.getElementById('thanThanhVien');
       than.innerHTML = '';
       (kq.danhSach || []).forEach(function (tv) { than.appendChild(veHang(tv)); });
     }).catch(function () {
+      than.innerHTML = '';
       hienThongBao(baoDanhSach, 'Không gọi được máy chủ, thử lại sau.', 'error');
     });
   }
 
-  // -------------------------------------------------------------- form thêm/sửa
   function datLaiForm() {
     dinhDanhDangSua = null;
     document.getElementById('tieuDeForm').textContent = 'Thêm thành viên mới';
@@ -407,6 +579,7 @@
 
   document.getElementById('btnLuu').addEventListener('click', function () {
     var baoForm = document.getElementById('baoForm');
+    var btn = document.getElementById('btnLuu');
     hienThongBao(baoForm, '', '');
     var than = {
       adminEmail: admin.dinhDanh, adminCode: admin.code,
@@ -419,14 +592,202 @@
     };
     if (dinhDanhDangSua) than.dinhDanhCu = dinhDanhDangSua;
 
+    dangXuLy(btn, true, 'Đang lưu…');
     goi('adminLuuThanhVien', than).then(function (kq) {
+      dangXuLy(btn, false);
       hienThongBao(baoForm, kq.message || (kq.result ? 'Đã lưu.' : 'Lưu thất bại.'), kq.result ? 'success' : 'error');
       if (kq.result) {
         datLaiForm();
         taiDanhSach();
       }
     }).catch(function () {
+      dangXuLy(btn, false);
       hienThongBao(baoForm, 'Không gọi được máy chủ, thử lại sau.', 'error');
+    });
+  });
+
+  // ================================================================ TRANG NỘI DUNG BẢN ĐỒ
+  var thanNoiDungDaTai = false;
+
+  function veHangNoiDung(muc) {
+    var tr = document.createElement('tr');
+    function td(chu) { var t = document.createElement('td'); t.textContent = chu; return t; }
+
+    var tdCM = document.createElement('td');
+    tdCM.className = 'cot-chinh';
+    tdCM.textContent = muc.chuyenMuc;
+    var hanhDong = document.createElement('div');
+    hanhDong.className = 'row-actions';
+    var lSua = document.createElement('a');
+    lSua.textContent = 'Sửa';
+    lSua.addEventListener('click', function () { napVaoFormNoiDung(muc); });
+    hanhDong.appendChild(lSua);
+    tdCM.appendChild(hanhDong);
+    tr.appendChild(tdCM);
+
+    tr.appendChild(td(muc.typedata));
+    tr.appendChild(td(muc.keydata));
+
+    var tdND = document.createElement('td');
+    var span = document.createElement('span');
+    span.className = 'noi-dung-rut-gon';
+    span.textContent = (muc.noiDung || '(rỗng)').replace(/<[^>]+>/g, ' ').trim() || '(rỗng)';
+    tdND.appendChild(span);
+    tr.appendChild(tdND);
+    return tr;
+  }
+
+  function taiDanhSachNoiDung() {
+    var bao = document.getElementById('baoDanhSachNoiDung');
+    var than = document.getElementById('thanNoiDung');
+    hienThongBao(bao, '', '');
+    than.innerHTML = '<tr><td colspan="4"><div class="dang-tai"><span class="spinner toi"></span>Đang tải nội dung…</div></td></tr>';
+    goi('adminDanhSachNoiDung', { adminEmail: admin.dinhDanh, adminCode: admin.code }).then(function (kq) {
+      if (!kq.result) {
+        than.innerHTML = '';
+        hienThongBao(bao, kq.message || 'Không tải được nội dung.', 'error');
+        return;
+      }
+      thanNoiDungDaTai = true;
+      than.innerHTML = '';
+      (kq.danhSach || []).forEach(function (muc) { than.appendChild(veHangNoiDung(muc)); });
+    }).catch(function () {
+      than.innerHTML = '';
+      hienThongBao(bao, 'Không gọi được máy chủ, thử lại sau.', 'error');
+    });
+  }
+
+  function datLaiFormNoiDung() {
+    ndDangSua = null;
+    document.getElementById('tieuDeFormNoiDung').textContent = 'Thêm nội dung mới';
+    document.getElementById('btnHuySuaNoiDung').classList.add('an');
+    document.getElementById('ndChuyenMuc').value = '';
+    document.getElementById('ndTypedata').value = '';
+    document.getElementById('ndKeydata').value = '';
+    document.getElementById('ndNoiDung').value = '';
+    document.getElementById('ndChuyenMuc').disabled = false;
+    document.getElementById('ndTypedata').disabled = false;
+    document.getElementById('ndKeydata').disabled = false;
+  }
+
+  function napVaoFormNoiDung(muc) {
+    ndDangSua = { chuyenMuc: muc.chuyenMuc, typedata: muc.typedata, keydata: muc.keydata };
+    document.getElementById('tieuDeFormNoiDung').textContent = 'Sửa: ' + muc.chuyenMuc + ' / ' + muc.typedata + ' / ' + muc.keydata;
+    document.getElementById('btnHuySuaNoiDung').classList.remove('an');
+    document.getElementById('ndChuyenMuc').value = muc.chuyenMuc;
+    document.getElementById('ndTypedata').value = muc.typedata;
+    document.getElementById('ndKeydata').value = muc.keydata;
+    document.getElementById('ndNoiDung').value = muc.noiDung || '';
+    document.getElementById('khoiFormNoiDung').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  document.getElementById('btnHuySuaNoiDung').addEventListener('click', datLaiFormNoiDung);
+  document.getElementById('btnThemNoiDungTitle').addEventListener('click', function () {
+    datLaiFormNoiDung();
+    document.getElementById('khoiFormNoiDung').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  });
+
+  document.getElementById('btnLuuNoiDung').addEventListener('click', function () {
+    var bao = document.getElementById('baoFormNoiDung');
+    var btn = document.getElementById('btnLuuNoiDung');
+    hienThongBao(bao, '', '');
+    var chuyenMuc = document.getElementById('ndChuyenMuc').value.trim();
+    var typedata = document.getElementById('ndTypedata').value.trim();
+    var keydata = document.getElementById('ndKeydata').value.trim();
+    if (!chuyenMuc || !typedata || !keydata) {
+      hienThongBao(bao, 'Nhập đủ chuyên mục, typedata và keydata.', 'error');
+      return;
+    }
+    dangXuLy(btn, true, 'Đang lưu…');
+    goi('adminLuuNoiDung', {
+      adminEmail: admin.dinhDanh, adminCode: admin.code,
+      chuyenMuc: chuyenMuc, typedata: typedata, keydata: keydata,
+      noiDung: document.getElementById('ndNoiDung').value,
+    }).then(function (kq) {
+      dangXuLy(btn, false);
+      hienThongBao(bao, kq.message || (kq.result ? 'Đã lưu.' : 'Lưu thất bại.'), kq.result ? 'success' : 'error');
+      if (kq.result) {
+        datLaiFormNoiDung();
+        taiDanhSachNoiDung();
+      }
+    }).catch(function () {
+      dangXuLy(btn, false);
+      hienThongBao(bao, 'Không gọi được máy chủ, thử lại sau.', 'error');
+    });
+  });
+
+  // ================================================================ TRANG HIỂN THỊ THEO GÓI
+  function taiHienThi() {
+    var bao = document.getElementById('baoHienThi');
+    var luoi = document.getElementById('luoiCheckbox');
+    hienThongBao(bao, '', '');
+    hienDangTai(luoi, 'Đang tải cấu hình…');
+    goi('adminDanhSachHienThi', { adminEmail: admin.dinhDanh, adminCode: admin.code }).then(function (kq) {
+      if (!kq.result) {
+        luoi.innerHTML = '';
+        hienThongBao(bao, kq.message || 'Không tải được cấu hình.', 'error');
+        return;
+      }
+      hienThi = kq;
+      veTabGoi();
+      chonGoi(hienThi.danhSachGoi[0]);
+    }).catch(function () {
+      luoi.innerHTML = '';
+      hienThongBao(bao, 'Không gọi được máy chủ, thử lại sau.', 'error');
+    });
+  }
+
+  function veTabGoi() {
+    var tab = document.getElementById('tabGoi');
+    tab.innerHTML = '';
+    hienThi.danhSachGoi.forEach(function (goiTen) {
+      var b = document.createElement('button');
+      b.textContent = goiTen;
+      b.dataset.goi = goiTen;
+      b.addEventListener('click', function () { chonGoi(goiTen); });
+      tab.appendChild(b);
+    });
+  }
+
+  function chonGoi(goiTen) {
+    goiDangXem = goiTen;
+    document.querySelectorAll('#tabGoi button').forEach(function (b) {
+      b.classList.toggle('hien-tai', b.dataset.goi === goiTen);
+    });
+    var luoi = document.getElementById('luoiCheckbox');
+    luoi.innerHTML = '';
+    var cauHinh = hienThi.cauHinh[goiTen] || {};
+    hienThi.cacMuc.forEach(function (muc) {
+      var label = document.createElement('label');
+      var cb = document.createElement('input');
+      cb.type = 'checkbox';
+      cb.dataset.muc = muc;
+      cb.checked = !!cauHinh[muc];
+      label.appendChild(cb);
+      label.appendChild(document.createTextNode(muc.replace(/^display_/, '')));
+      luoi.appendChild(label);
+    });
+  }
+
+  document.getElementById('btnLuuHienThi').addEventListener('click', function () {
+    var bao = document.getElementById('baoHienThi');
+    var btn = document.getElementById('btnLuuHienThi');
+    if (!goiDangXem) return;
+    var cauHinhMoi = {};
+    document.querySelectorAll('#luoiCheckbox input[type=checkbox]').forEach(function (cb) {
+      cauHinhMoi[cb.dataset.muc] = cb.checked ? 1 : 0;
+    });
+    dangXuLy(btn, true, 'Đang lưu…');
+    goi('adminLuuHienThi', {
+      adminEmail: admin.dinhDanh, adminCode: admin.code,
+      userType: goiDangXem, cauHinh: JSON.stringify(cauHinhMoi),
+    }).then(function (kq) {
+      dangXuLy(btn, false);
+      hienThongBao(bao, kq.message || (kq.result ? 'Đã lưu.' : 'Lưu thất bại.'), kq.result ? 'success' : 'error');
+      if (kq.result) hienThi.cauHinh[goiDangXem] = cauHinhMoi;
+    }).catch(function () {
+      dangXuLy(btn, false);
+      hienThongBao(bao, 'Không gọi được máy chủ, thử lại sau.', 'error');
     });
   });
 
