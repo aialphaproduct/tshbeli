@@ -40,6 +40,59 @@
     if (!document.getElementById('readerInfoAuthenticateFormPopup')) xinQuyenKhach();
   });
 
+  // ---------------------------------------------------------- nút "Bỏ Qua" luôn vào được ngay
+
+  // Bản gốc (beli-auth.js) gọi ajax getDataInit KHÔNG có timeout khi bấm "Bỏ
+  // Qua"; nếu Cloudflare Worker chậm/từ chối/mất mạng, ajax treo vô thời hạn
+  // và popup đứng im mãi — không bấm gì được nữa. Vá thêm một trình lắng
+  // nghe: bấm là mở khoá giao diện ngay bằng dữ liệu mặc định, không đợi máy
+  // chủ. Nếu máy chủ trả lời kịp, hàm gốc vẫn chạy tiếp và tự ghi đè bằng dữ
+  // liệu thật (danh sách chuyên mục), nên không mất gì khi mạng vẫn ổn.
+  (function boQuaKhongCanChoMang() {
+    var nutBoQua = document.getElementById('readerInfoAuthenticateClosePopup');
+    var popup = document.getElementById('readerInfoAuthenticateFormPopup');
+    if (!nutBoQua || !popup) return;
+
+    var CHUYEN_MUC_MAC_DINH = 'Tổng Hợp,Học thuật,Code mới';
+
+    function moKhoaGiaoDien() {
+      popup.style.display = 'none';
+      var loading = document.querySelector('.readerInfo-loadingPage');
+      if (loading) loading.style.display = 'none';
+      try {
+        if (!localStorage.getItem('userType')) localStorage.setItem('userType', 'khach');
+        if (!localStorage.getItem('typeMapSearchList')) {
+          localStorage.setItem('typeMapSearchList', CHUYEN_MUC_MAC_DINH);
+        }
+      } catch (e) { /* trình duyệt chặn localStorage thì thôi */ }
+
+      var formMain = document.getElementById('form-main');
+      if (formMain) formMain.style.display = '';
+
+      // Giống hệt createListTypeMapSearch() bản gốc: thay hẳn toàn bộ option
+      // (kể cả option rỗng có sẵn trong HTML), không chỉ thêm vào khi rỗng.
+      var mucChon = document.getElementById('typeMapSearch');
+      if (mucChon) {
+        mucChon.innerHTML = '';
+        (localStorage.getItem('typeMapSearchList') || CHUYEN_MUC_MAC_DINH).split(',').forEach(function (ten) {
+          if (!ten) return;
+          var o = document.createElement('option');
+          o.value = ten;
+          o.textContent = ten;
+          mucChon.appendChild(o);
+        });
+      }
+    }
+
+    nutBoQua.addEventListener('click', function () {
+      // Nhường cho hàm gốc (nếu có) chạy xong phần đồng bộ của nó trước, rồi
+      // mở khoá ngay bất kể máy chủ đã trả lời hay chưa. Dùng setTimeout chứ
+      // không dùng requestAnimationFrame: rAF không chạy khi tab bị ẩn/chuyển
+      // nền, lỡ vậy thì đúng lúc cần mở khoá nhất lại không chạy.
+      setTimeout(moKhoaGiaoDien, 0);
+    });
+  })();
+
   // ---------------------------------------------------------- tiện ích
 
   /** Tách chuỗi form-urlencoded thành đối tượng. */
