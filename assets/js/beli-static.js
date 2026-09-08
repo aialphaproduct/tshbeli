@@ -278,6 +278,39 @@
     if (nutTraCuu) ghiDuLieuLenDiaChi();
   }, true);
 
+  // Nút "Chia sẻ" bản gốc bắt buộc phải có emailUser (chỉ có khi đăng nhập
+  // thật bằng email+code) mới cho sao chép, nên khách bấm "Bỏ Qua" bấm Chia
+  // sẻ chỉ hiện "Không thể sao chép!!" chứ không làm gì. Với khách (chưa
+  // đăng nhập), chặn hành vi gốc lại và tự sao chép link theo đúng dữ liệu
+  // đang có trên form — không cần tài khoản. Ai đã đăng nhập thật thì vẫn
+  // để hành vi gốc chạy như cũ.
+  document.addEventListener('click', function (e) {
+    var nutChiaSe = e.target && e.target.closest && e.target.closest('#shareBtn');
+    if (!nutChiaSe) return;
+    var daDangNhap = (function () {
+      try { return !!localStorage.getItem('emailUser'); } catch (err) { return false; }
+    })();
+    if (daDangNhap) return; // để hành vi gốc chạy bình thường
+
+    e.preventDefault();
+    e.stopImmediatePropagation();
+    var link = taoLinkKhoiPhuc();
+    var xong = function () { nutChiaSe.innerHTML = 'Đã sao chép!'; };
+    var loi = function () { nutChiaSe.innerHTML = 'Không thể sao chép!!'; };
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(link).then(xong).catch(function () {
+        var o = document.createElement('input');
+        o.value = link;
+        document.body.appendChild(o);
+        o.select();
+        try { document.execCommand('copy'); xong(); } catch (e2) { loi(); }
+        document.body.removeChild(o);
+      });
+    } else {
+      loi();
+    }
+  }, true);
+
   /** Lúc trang vừa mở: nếu link có kèm dữ liệu (từ hộp thoại trên) thì tự điền vào form. */
   (function khoiPhucTuLink() {
     var qs = new URLSearchParams(location.search);
